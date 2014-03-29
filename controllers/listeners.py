@@ -7,7 +7,7 @@ class GrabListener(Leap.Listener):
     """
     The grab gesture is detected when the fingers all converge to the center of the hand.
     """
-    def __init__(self, nbFingersMax=5, threshold=15, nbFramesAnalyzed=10):
+    def __init__(self, nbFingersMax=5, threshold=0, nbFramesAnalyzed=0):
         Leap.Listener.__init__(self)
 
         self._isGrabbing = False
@@ -42,14 +42,14 @@ class GrabListener(Leap.Listener):
                 self._posHistory.append(hand.stabilized_palm_position - self._handOrigin)
 
             # When we have nbFramesAnalyzed positions in the list
-            if len(self._posHistory) == self.nbFramesAnalyzed:
+            if True or len(self._posHistory) >= self.nbFramesAnalyzed:
                 sumDistances = 0
 
                 for i in xrange(len(self._posHistory)):
                     sumDistances += self._posHistory[i].distance_to(self._posHistory[i - 1])
 
                 # We want to MOVE!!!
-                if sumDistances > self.threshold:
+                if True or sumDistances > self.threshold:
                     self._isGrabbing = True
                     send_command('object_move_origin', {'x': self._handOrigin.z, 'y': self._handOrigin.x, 'z': self._handOrigin.y})
 
@@ -62,6 +62,7 @@ class GrabListener(Leap.Listener):
 
         # Ungrab
         if self._isGrabbing and len(fingers) == self.nbFingersMax:
+            print('Ungrab')
             self._isGrabbing = False
 
     def _isGrab(self, hand, nbFramesAnalyzed=45):
@@ -91,7 +92,7 @@ class GrabListener(Leap.Listener):
         send_long_command('object_move', {'tx': positionFromHand.z, 'ty': positionFromHand.x, 'tz': positionFromHand.y},
                 filters={'tx': 'coordinate', 'ty': 'coordinate', 'tz': 'coordinate'})
         time.sleep(0.02)
- 
+
 class ScaleListener(Leap.Listener):
     """
     The scale gesture is detected when two hands are initially closed (no fingers visible).
