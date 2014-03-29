@@ -21,6 +21,9 @@ if __name__ == '__main__':
             pipe, _ = sock.accept()
             clients.append(pipe)
             send_command('mode_sculpt', {})
+            # TODO: instantiate all the controllers
+            # They will use communication.send_command to send (automatically filtered) data
+
     except (KeyboardInterrupt, EOFError):
         print 'Done'
     finally:
