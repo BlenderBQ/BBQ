@@ -35,13 +35,16 @@ def send_long_command(self, name, data, filters=None):
     """
     if filters is None:
         filters = {}
+    changed = False
     for arg, filter_key in filters.iteritems():
         assert arg in data, "Comment t'es trop nul ! (t'as mis un filtre sur un truc qui existe pas)"
         _filters.setdefault(name, {})
         if filter_key not in _filters[name]:
             _filters[name] = _filter_mapping[filter_key]()
-        new_value = _filters[name].apply(data[arg])
-        if new_value is None:
-            return
+        new_value, interesting = _filters[name].apply(data[arg])
+        if not interesting:
+            continue
         data[arg] = new_value
-    return send_command(name, data)
+        changed = True
+    if changed:
+        return send_command(name, data)
