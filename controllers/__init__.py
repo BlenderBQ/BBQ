@@ -9,6 +9,7 @@ from pottery import PotteryListener
 from listeners import GrabListener
 from listeners import ScaleListener
 from listeners import CalmGestureListener
+from listeners import FingersListener
 
 # global leap controller
 leap_controller = Leap.Controller()

@@ -1,6 +1,7 @@
 from communication import send_command, send_long_command
 import Leap
 import time
+from leaputils import *
 
 class GrabMode:
     """
@@ -214,3 +215,35 @@ class CalmGestureListener(Leap.Listener):
         del self._history[:]
         send_command('set_continuous_rotation', { 'speed': 0 })
         print('Setting rotation speed to 0')
+
+class FingersListener(Leap.Listener):
+    """
+    This gesture is intended for sculpt mode.
+    Each finger could potentially send "pressure" commands.
+    """
+    def __init__(self):
+        Leap.Listener.__init__(self)
+
+    def on_frame(self, controller):
+        # Get the most recent frame
+        frame = controller.frame()
+
+        # Need at least one hand
+        if not frame.hands:
+            return
+
+        for hand in frame.hands:
+            for finger in hand.fingers:
+                # TODO: only activate if no other gesture is ongoing
+                self.activateGesture(finger.stabilized_tip_position, finger.direction)
+        print 'end frame'
+
+    def activateGesture(self, tip, direction):
+        # TODO: rescale coordinates, center them at user-confortable origin
+        tip = rescale_position(tip)
+
+        send_command('sculp_touch', {
+            'x': tip.x, 'y': tip.y, 'z': tip.z,
+            'vx': direction.x, 'vy': direction.y, 'vz': direction.z
+        })
+        print('Sending sculpt command pointing at ({}, {}, {})'.format(tip.x, tip.y, tip.z))
