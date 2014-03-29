@@ -1,12 +1,14 @@
 import os
 import json
 import socket
+import threading
 
 socket_path = 'server.sock'
 
 class CommandServer(object):
     def __init__(self):
         self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
+        self._lock = threading.Lock()
 
     def __enter__(self):
         self.setup()
@@ -24,8 +26,10 @@ class CommandServer(object):
         os.remove(socket_path)
 
     def send_command(self, name, data):
-        data['__cmd__'] = name
-        self.sockfile.write(json.dumps(data) + '\n')
-        self.sockfile.flush()
+        with self._lock:
+            data['__cmd__'] = name
+            json.dump(data, self.sockfile)
+            self.sockfile.write(json.dumps(data) + '\n')
+            self.sockfile.flush()
 
 server_socket = CommandServer()
