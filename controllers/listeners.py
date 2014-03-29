@@ -131,7 +131,7 @@ class ScaleListener(Leap.Listener):
                 variation = self._history[i].magnitude - self._history[i-1].magnitude
 
             if abs(variation) >= self.threshold:
-                startScaling(mag)
+                self.startScaling(mag)
 
             # Limit history length to nbFramesAnalyzed
             n = len(self._history)
@@ -151,7 +151,7 @@ class ScaleListener(Leap.Listener):
         del self._history[:]
 
         send_command('object_scale_origin')
-        print('Starting to scale object')    
+        print('Starting to scale object')
 
     def sendNewScalingFactor(self, factor):
         send_long_command('object_scale', {

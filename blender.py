@@ -106,6 +106,30 @@ class BBQOperator(bpy.types.Operator):
         return {'RUNNING_MODAL'}
         # return context.window_manager.invoke_props_dialog(self)
 
+    def my_little_swinging_pot(self):
+        pass
+
+    def sculpt_touch(self, **kwargs):
+        x, y, z = kwargs['x'], kwargs['y'], kwargs['z']
+        vx, vy, vz = kwargs['vx'], kwargs['vy'], kwargs['vz']
+
+        dist = 0.42 # magic number
+        x2, y2, z2 = x + vx * dist, y + vy * dist, z + vz * dist
+
+        p1 = bpy.types.OperatorStrokeElement()
+        p1.is_start = True
+        p1.location = x, y, z
+        p1.pressure = 1.0
+        p1.time = 1.0
+
+        p2 = bpy.types.OperatorStrokeElement()
+        p2.is_start = False
+        p2.location = x2, y2, z2
+        p2.pressure = 1.0
+        p2.time = 1.0
+
+        bpy.ops.sculpt.brush_stroke(stroke=[p1, p2])
+
     def mode_set(self, mode):
         if bpy.context.area.type == 'VIEW_3D':
             bpy.ops.object.mode_set(mode=mode)
@@ -151,10 +175,11 @@ class BBQOperator(bpy.types.Operator):
         x, y, z = self.move_origin
         dx, dy, dz = tx - x, ty - y, tz - z
         dx, dy, dz = map(blendPos, [dx, dy, dz])
-        mat_trans = mathutils.Matrix.Translation((dx, dy, dz))
-        loc = (self.move_matrix_origin * mat_trans).decompose()[0]
+        # mat_trans = mathutils.Matrix.Translation((dx, dy, dz))
+        # loc = (self.move_matrix_origin * mat_trans).decompose()[0]
         for o in bpy.context.selected_objects:
-            o.location = loc
+            # o.location = loc
+            o.location = dx, dy, dz
 
     def object_rotate(self, **kwargs):
         ax, ay, az = kwargs['ax'], kwargs['ay'], kwargs['az']
