@@ -27,7 +27,7 @@ if __name__ == '__main__':
     socket_path = 'server.sock'
     sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     sock.bind(socket_path)
-    sock.listen()
+    sock.listen(0)
 
     print 'Started: Ctrl-C to kill'
     try:

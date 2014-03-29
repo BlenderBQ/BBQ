@@ -83,7 +83,7 @@ class BBQOperator(bpy.types.Operator):
 
     def modal(self, context, event):
         try:
-            cmd, args = read_command(self.transport)
+            cmd, args = read_command(self.sockfile)
         except IOError as e:
             logging.exception(e)
         else:
