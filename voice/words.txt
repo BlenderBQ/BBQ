@@ -1,6 +1,6 @@
 center
-above
-below
+over
+under
 left
 right
 
@@ -8,7 +8,7 @@ paint
 sculpt
 object
 
-quiet
-listen
+sleep
+wake
 
-hands off
+drop
