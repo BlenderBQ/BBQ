@@ -3,6 +3,7 @@ this_dir = os.path.dirname(os.path.realpath(__name__))
 sys.path.insert(0, os.path.join(this_dir, 'lib'))
 import Leap
 from sculpt import SculptListener
+from pottery import PotteryListener
 from listeners import GrabListener
 
 # global leap controller
@@ -26,13 +27,3 @@ def set_current_controller(listener_clss):
         lstn = lstn_cls()
         _current_controller.append(lstn)
         leap_controller.add_listener(lstn)
-
-if __name__ == '__main__':
-    set_current_controller([SculptListener, GrabListener])
-
-    # Keep this process running until Enter is pressed
-    print "Press Enter to quit..."
-    sys.stdin.readline()
-
-    # Remove the sample listener when done
-    disable_current_controller()
