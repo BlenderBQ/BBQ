@@ -1,6 +1,7 @@
 import bpy
 import socket
 import json
+import logging
 
 def view_numpad(view):
     if bpy.context.area.type == 'VIEW_3D':
@@ -102,7 +103,8 @@ class BBQOperator(bpy.types.Operator):
         try:
             self.transport.connect(self.sock_path)
             self.sockfile = self.transport.makefile()
-        except IOError:
+        except IOError as e:
+            logging.exception(e)
             return {'CANCELLED'}
 
         context.window_manager.modal_handler_add(self)
