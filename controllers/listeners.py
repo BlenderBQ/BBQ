@@ -88,6 +88,7 @@ class GrabListener(Leap.Listener):
         return lessFingers
 
     def sendNewPosition(self, positionFromHand):
+        print 'sendNewPosition', positionFromHand
         send_long_command('object_move', {'tx': positionFromHand.z, 'ty': positionFromHand.x, 'tz': positionFromHand.y},
                 filters={'tx': 'coordinate', 'ty': 'coordinate', 'tz': 'coordinate'})
         time.sleep(0.02)
