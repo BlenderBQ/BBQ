@@ -19,13 +19,17 @@ def view_right():
 def view_camera():
     view_numpad('CAMERA')
 
-def object_move(x, y, z):
+def object_move(tx, ty, tz):
     for o in bpy.context.selected_objects:
-        o.location = (x, y, z)
+        o.location = (tx, ty, tz)
 
 def object_rotate(ax, ay, az):
     for o in bpy.context.selected_objects:
         o.rotation_euler = (ax, ay, az)
+
+def object_scale(sx, sy, sz):
+    for o in bpy.context.selected_objects:
+        o.scale = (sx, sy, sz)
 
 # class TranslationOperator:
 #     @classmethod
@@ -60,8 +64,9 @@ class BBQOperator(bpy.types.Operator):
         pass
 
     def modal(self, context, event):
-        object_move(event.mouse_x / 100, event.mouse_y / 100, 0)
-        object_rotate(event.mouse_x / 100, event.mouse_y / 100, 0)
+        # object_move(event.mouse_x / 100, event.mouse_y / 100, 0)
+        # object_rotate(event.mouse_x / 100, event.mouse_y / 100, 0)
+        object_scale(event.mouse_x / 1000, event.mouse_y / 1000, 0)
         if event.type == 'LEFTMOUSE':
             view_top()
         elif event.type == 'RIGHTMOUSE':
