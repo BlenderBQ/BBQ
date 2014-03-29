@@ -129,10 +129,7 @@ class ScaleListener(Leap.Listener):
                 variation = self._history[i].magnitude - self._history[i-1].magnitude
 
             if abs(variation) >= self.threshold:
-                self._initialFactor = mag
-                self._isScaling = True
-                # Clear history (it is not needed when movement is activated)
-                del self._history[:]
+                startScaling(mag)
 
             # Limit history length to nbFramesAnalyzed
             n = len(self._history)
@@ -144,6 +141,15 @@ class ScaleListener(Leap.Listener):
         else:
             # Scale back the magnitude between 0 and 1 (make smaller) or > 1 (make bigger)
             self.sendNewScalingFactor(mag / self._initialFactor)
+
+    def startScaling(self, currentMagnitude):
+        self._initialFactor = currentMagnitude
+        self._isScaling = True
+        # Clear history (it is not needed when movement is activated)
+        del self._history[:]
+
+        send_command('object_scale_origin')
+        print('Starting to scale object')    
 
     def sendNewScalingFactor(self, factor):
         send_long_command('object_scale', {
