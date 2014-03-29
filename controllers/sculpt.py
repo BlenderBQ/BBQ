@@ -34,7 +34,7 @@ class SculptListener(Leap.Listener):
                 self.screen_tap(gesture)
 
     def set_cursor_position(self, position):
-        print 'Position changed:', position # TODO finir
+        pass#print 'Position changed:', position # TODO finir
 
     def screen_tap(self, gesture):
         print('Screen tapped') # TODO finir

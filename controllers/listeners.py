@@ -9,7 +9,7 @@ class GrabListener(Leap.Listener):
 
         self._isGrabbing = False
         self._readyToGrab = False
-        self._position = Leap.Vector()
+        self._handOrigin = Leap.Vector()
 
         self.nbFingersMax = nbFingersMax
 
@@ -25,12 +25,13 @@ class GrabListener(Leap.Listener):
         nbFingers = len(hand.fingers)
 
         if self._isGrabbing:
-            self.moveObject(self._position - hand.palm_position)
+            self.sendNewPosition(hand.palm_position - self._handOrigin)
 
         # Grab
         if not self._isGrabbing and self._isGrab(nbFingers):
             self._isGrabbing = True
-            self._position = hand.palm_position
+            self._handOrigin = hand.palm_position
+            # TODO send coordinates origin
 
         # Ungrab
         if self._isGrabbing and nbFingers == self.nbFingersMax:
@@ -43,10 +44,9 @@ class GrabListener(Leap.Listener):
 
         return self._readyToGrab and nbFingers == 0
 
-    def moveObject(self, translateVector):
-        print('Moving object of {}'.format(translateVector))
-        # TODO move object
+    def sendNewPosition(self, positionFromHand):
+        print('Moving object to {}'.format(positionFromHand))
+        # TODO send move object command
 
     def finishObjectMovement(self):
         print('Object moved.')
-        # TODO finish movement
