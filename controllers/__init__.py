@@ -2,7 +2,7 @@ import os, sys
 this_dir = os.path.dirname(os.path.realpath(__name__))
 sys.path.insert(0, os.path.join(this_dir, '..', 'lib'))
 import Leap
-from sculpt import SculptListener
+from sculpt import SculptListener, GrabListener
 
 _leap_controller = Leap.Controller()
 _current_controller = []
@@ -25,7 +25,7 @@ def set_current_controller(listener_clss):
         _leap_controller.add_listener(lstn)
 
 def main():
-    set_current_controller([SculptListener])
+    set_current_controller([SculptListener, GrabListener])
 
     # Keep this process running until Enter is pressed
     print "Press Enter to quit..."
