@@ -1,5 +1,6 @@
 from functools import partial
 from communication import send_command
+from controllers import set_current_controller
 
 def center_object():
     print 'centering object'
@@ -14,7 +15,6 @@ def view_from(direction):
     send_command(view_command)
 
 _mode_mapping = {
-        #'paint': ,
         'sculpt': 'sculpt',
         'pottery': 'pottery',
         'object': 'object',
@@ -22,7 +22,9 @@ _mode_mapping = {
         }
 def enter_mode(mode):
     print 'entering mode:', mode
-    send_command('set_mode', { 'mode': mode })
+    if mode not in _mode_mapping:
+        print 'COMMENT T4ES TROP NUL', mode
+    set_current_controller(_mode_mapping[mode])
 
 _cmd_mapping = {
             'center': center_object,
@@ -30,7 +32,6 @@ _cmd_mapping = {
             'under': partial(view_from, 'under'),
             'left': partial(view_from, 'left'),
             'right': partial(view_from, 'right'),
-            'paint': partial(enter_mode, 'paint'),
             'sculpt': partial(enter_mode, 'sculpt'),
             'pottery': partial(enter_mode, 'pottery'),
             'object': partial(enter_mode, 'object'),
@@ -40,4 +41,5 @@ _cmd_mapping = {
 def interpret_command(cmd):
     if cmd not in _cmd_mapping:
         print "C'est quoi ce dictionnaire de merde ???", cmd
+        return
     _cmd_mapping[cmd]()
