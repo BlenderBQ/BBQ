@@ -1,6 +1,7 @@
 import os, sys
 this_dir = os.path.dirname(os.path.realpath(__name__))
 sys.path.insert(0, os.path.join(this_dir, '..', 'lib'))
+from communication import send_command, send_long_command
 import Leap
 
 class GrabMode:
@@ -15,13 +16,13 @@ class GrabListener(Leap.Listener):
     """
     The grab gesture is detected when nbFingersMax disappear at once
     """
-    def __init__(self, nbFingersMax = 5, threshold = 25, nbFramesAnalyzed = 10):
+    def __init__(self, nbFingersMax = 5, threshold = 15, nbFramesAnalyzed = 10):
         Leap.Listener.__init__(self)
 
         self._readyToGrab = False
         self._handOrigin = Leap.Vector()
         self._historicPositions = []
-        self._grabMode = GrabMode.SEARCHING
+        self._grabModes = [GrabMode.SEARCHING]
 
         self.nbFingersMax = nbFingersMax
         self.nbFramesAnalyzed = nbFramesAnalyzed
@@ -39,7 +40,7 @@ class GrabListener(Leap.Listener):
         nbFingers = len(hand.fingers)
 
         # Grab: analysis of movement to find mode
-        if GrabMode.SEARCHING == self._grabMode and self._isGrab(nbFingers):
+        if GrabMode.SEARCHING in self._grabModes and self._isGrab(nbFingers):
             self._historicPositions.append(hand.palm_position - self._handOrigin)
 
             # When we have nbFramesAnalyzed positions in the list
@@ -51,9 +52,10 @@ class GrabListener(Leap.Listener):
 
                 # We want to MOVE!!!
                 if sumDistances > self.threshold:
-                    self._grabMode = GrabMode.MOVE
+                    self._grabModes.remove(GrabMode.SEARCHING)
+                    self._grabModes.append(GrabMode.MOVE)
                     self._handOrigin = hand.palm_position
-                    # TODO send coordinates origin
+                    send_command('object_move_origin', {'x': self._handOrigin.x, 'y': self._handOrigin.y, 'z': self._handOrigin.z})
 
                     for j in range(len(self._historicPositions) - 1):
                         self.sendNewPosition(self._historicPositions[j] - self._handOrigin)
@@ -61,12 +63,15 @@ class GrabListener(Leap.Listener):
                 del self._historicPositions[:]
 
         # Grabbing
-        if GrabMode.MOVE == self._grabMode:
+        if GrabMode.MOVE in self._grabModes:
             self.sendNewPosition(hand.palm_position - self._handOrigin)
 
+        if GrabMode.ROTATE in self._grabModes:
+            pass#TODO rotate
+
         # Ungrab
-        if GrabMode.SEARCHING != self._grabMode and nbFingers == self.nbFingersMax:
-            self._grabMode = GrabMode.SEARCHING
+        if GrabMode.SEARCHING != self._grabModes and nbFingers == self.nbFingersMax:
+            self._grabModes = GrabMode.SEARCHING
 
     def _isGrab(self, nbFingers):
         if self.nbFingersMax == nbFingers:
@@ -75,5 +80,6 @@ class GrabListener(Leap.Listener):
         return self._readyToGrab and nbFingers == 0
 
     def sendNewPosition(self, positionFromHand):
+        send_long_command('object_move_origin', {'x': positionFromHand.x, 'y': positionFromHand.y, 'z': positionFromHand.z})
         print('Moving object to {}'.format(positionFromHand))
         # TODO send move object command
