@@ -2,6 +2,7 @@ import os
 import json
 import socket
 import threading
+import logging
 
 # connection sockets for clients
 clients = []
@@ -12,6 +13,7 @@ def send_command(name, data):
     Send a command: name is the target function's name, data is the target
     function's kwargs.
     """
+    global clients
     with _lock:
         data['__cmd__'] = name
         jdata = json.dumps(data) + '\n'

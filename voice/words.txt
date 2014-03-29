@@ -1,12 +1,14 @@
-center view
-view from above
-view from below
-view from left
-view from right
+center
+above
+below
+left
+right
 
-paint mode
-sculpt mode
-object mode
+paint
+sculpt
+object
 
-okay blender
+quiet
+listen
+
 hands off

@@ -6,7 +6,8 @@ import Leap
 import socket
 from controllers import (set_current_controller, disable_current_controller,
         SculptListener)
-from communication.server import clients
+from communication import clients
+from communication import send_command
 
 if __name__ == '__main__':
     socket_path = 'server.sock'
@@ -19,7 +20,8 @@ if __name__ == '__main__':
         while True:
             pipe, _ = sock.accept()
             clients.append(pipe)
-    except KeyboardInterrupt:
+            send_command('mode_sculpt', {})
+    except (KeyboardInterrupt, EOFError):
         print 'Done'
     finally:
         disable_current_controller()
