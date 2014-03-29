@@ -58,7 +58,7 @@ class GrabListener(Leap.Listener):
         # Grabbing
         if self._isGrabbing:
             self.sendNewPosition(hand.stabilized_palm_position - self._handOrigin)
-            pass#TODO rotate
+            pass #TODO rotate
 
         # Ungrab
         if self._isGrabbing and len(fingers) == self.nbFingersMax:
@@ -91,6 +91,7 @@ class GrabListener(Leap.Listener):
         send_long_command('object_move', {'tx': positionFromHand.z, 'ty': positionFromHand.x, 'tz': positionFromHand.y},
                 filters={'tx': 'coordinate', 'ty': 'coordinate', 'tz': 'coordinate'})
         time.sleep(0.02)
+        print 'Moving object to ({positionFromHand.x}, {positionFromHand.y}, {positionFromHand.z})'.format()
  
 class ScaleListener(Leap.Listener):
     """
@@ -235,8 +236,11 @@ class FingersListener(Leap.Listener):
     This gesture is intended for sculpt mode.
     Each finger could potentially send "pressure" commands.
     """
-    def __init__(self):
+    def __init__(self, threshold = 1, lengthThreshold = 25, nbFramesAnalyzed = 30):
         Leap.Listener.__init__(self)
+        self.threshold = threshold
+        self.lengthThreshold = lengthThreshold
+        self.nbFramesAnalyzed = nbFramesAnalyzed
 
     def on_frame(self, controller):
         # Get the most recent frame
@@ -245,11 +249,19 @@ class FingersListener(Leap.Listener):
         # Need at least one hand
         if not frame.hands:
             return
+        # And three fingers at most
+        nFingers = 0
+        for hand in frame.hands:
+            nFingers += len(hand.fingers)
+        if nFingers > 2 or nFingers < 1:
+            return
 
         for hand in frame.hands:
             for finger in hand.fingers:
-                # TODO: only activate if no other gesture is ongoing
-                self.activateGesture(finger.stabilized_tip_position, finger.direction)
+                # Each finger must be present for some time before being able to paint
+                # and have a minimum length
+                if finger.time_visible > self.threshold and finger.length > self.lengthThreshold:
+                    self.activateGesture(finger.stabilized_tip_position, finger.direction)
 
     def activateGesture(self, tip, direction):
         # TODO: rescale coordinates, center them at user-confortable origin
