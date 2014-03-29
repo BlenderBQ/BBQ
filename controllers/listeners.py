@@ -3,6 +3,7 @@ this_dir = os.path.dirname(os.path.realpath(__name__))
 sys.path.insert(0, os.path.join(this_dir, '..', 'lib'))
 from communication import send_command, send_long_command
 import Leap
+import time
 
 class GrabMode:
     """
@@ -81,5 +82,6 @@ class GrabListener(Leap.Listener):
 
     def sendNewPosition(self, positionFromHand):
         send_command('object_move', {'tx': positionFromHand.x, 'ty': positionFromHand.y, 'tz': positionFromHand.z})
+        time.sleep(0.02)
         print('Moving object to {}'.format(positionFromHand))
         # TODO send move object command

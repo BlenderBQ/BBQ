@@ -4,7 +4,7 @@ import json
 import logging
 
 def blendPos(dim):
-    return dim / 100.0
+    return dim / 50.0
 
 def read_command(transport):
     try:
@@ -55,6 +55,7 @@ class BBQOperator(bpy.types.Operator):
             self.object_center
         ]
         self.commands = {f.__name__: f for f in _commands}
+        self._timer = None
 
     def __del__(self):
         print("Ending")
@@ -72,18 +73,20 @@ class BBQOperator(bpy.types.Operator):
 
     def modal(self, context, event):
         if event.type == 'ESC':
+            context.window_manager.event_timer_remove(self._timer)
             return {'FINISHED'}
 
-        try:
-            cmd = read_command(self.sockfile)
-        except IOError as e:
-            logging.exception(e)
-        else:
-            if cmd:
-                func, kwargs = cmd
-                print(func, kwargs)
-                if func in self.commands:
-                    self.commands[func](**kwargs)
+        if event.type == 'TIMER':
+            try:
+                cmd = read_command(self.sockfile)
+            except IOError as e:
+                logging.exception(e)
+            else:
+                if cmd:
+                    func, kwargs = cmd
+                    print(func, kwargs)
+                    if func in self.commands:
+                        self.commands[func](**kwargs)
 
         return {'RUNNING_MODAL'}
 
@@ -96,6 +99,7 @@ class BBQOperator(bpy.types.Operator):
             return {'CANCELLED'}
 
         print("Started")
+        self._timer = context.window_manager.event_timer_add(0.01, context.window)
         context.window_manager.modal_handler_add(self)
         return {'RUNNING_MODAL'}
         # return context.window_manager.invoke_props_dialog(self)
