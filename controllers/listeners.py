@@ -3,26 +3,17 @@ import Leap
 import time
 from leaputils import *
 
-class GrabMode:
-    """
-    When someone grabs, two actions are possible: MOVE or ROTATE. SEARCHING is used to find out which movement the user wants to do.
-    """
-    SEARCHING = 0
-    MOVE = 1
-    ROTATE = 2
-
 class GrabListener(Leap.Listener):
     """
-    The grab gesture is detected when nbFingersMax disappear at once.
-    Must have only one hand.
+    The grab gesture is detected when the fingers all converge to the center of the hand.
     """
     def __init__(self, nbFingersMax=5, threshold=15, nbFramesAnalyzed=10):
         Leap.Listener.__init__(self)
 
-        self._readyToGrab = False
-        self._handOrigin = Leap.Vector()
-        self._history = []
-        self._grabModes = [GrabMode.SEARCHING]
+        self._isGrabbing = False
+        self._handOrigin = None
+        self._posHistory = []
+        self._fingersHistory = []
 
         self.nbFingersMax = nbFingersMax
         self.nbFramesAnalyzed = nbFramesAnalyzed
@@ -33,57 +24,74 @@ class GrabListener(Leap.Listener):
         frame = controller.frame()
 
         if len(frame.hands) is not 1:
-            del self._history[:]
+            del self._fingersHistory[:]
+            del self._posHistory[:]
             return
 
         # Getting only the first hand
         hand = frame.hands[0]
-        nbFingers = len(hand.fingers)
+        fingers = hand.fingers
 
         # Grab: analysis of movement to find mode
-        if GrabMode.SEARCHING in self._grabModes and self._isGrab(nbFingers):
-            self._history.append(hand.palm_position - self._handOrigin)
+        if not self._isGrabbing and self._isGrab(hand):
+            print('Grab.')
+
+            if self._handOrigin is None:
+                self._handOrigin = hand.stabilized_palm_position
+            else:
+                self._posHistory.append(hand.stabilized_palm_position - self._handOrigin)
 
             # When we have nbFramesAnalyzed positions in the list
-            if len(self._history) == self.nbFramesAnalyzed:
+            if len(self._posHistory) == self.nbFramesAnalyzed:
                 sumDistances = 0
 
-                for i in xrange(len(self._history)):
-                    sumDistances += self._history[i].distance_to(self._history[i - 1])
+                for i in xrange(len(self._posHistory)):
+                    sumDistances += self._posHistory[i].distance_to(self._posHistory[i - 1])
 
                 # We want to MOVE!!!
                 if sumDistances > self.threshold:
-                    self._grabModes.remove(GrabMode.SEARCHING)
-                    self._grabModes.append(GrabMode.MOVE)
-                    self._handOrigin = hand.palm_position
+                    self._isGrabbing = True
                     send_command('object_move_origin', {'x': self._handOrigin.z, 'y': self._handOrigin.x, 'z': self._handOrigin.y})
 
-                del self._history[:]
+                del self._posHistory[:]
 
         # Grabbing
-        elif GrabMode.MOVE in self._grabModes:
-            self.sendNewPosition(hand.palm_position - self._handOrigin)
-
-        if GrabMode.ROTATE in self._grabModes:
+        if self._isGrabbing:
+            self.sendNewPosition(hand.stabilized_palm_position - self._handOrigin)
             pass#TODO rotate
 
         # Ungrab
-        if GrabMode.SEARCHING not in self._grabModes and nbFingers == self.nbFingersMax:
-            self._grabModes = [GrabMode.SEARCHING]
+        if self._isGrabbing and len(fingers) == self.nbFingersMax:
+            self._isGrabbing = False
 
-    def _isGrab(self, nbFingers):
-        if self.nbFingersMax == nbFingers:
-            self._readyToGrab = True
+    def _isGrab(self, hand, nbFramesAnalyzed=45):
+        fingers = hand.fingers
 
-        return self._readyToGrab and nbFingers == 0
+        distances = []
+        if fingers.is_empty and not self._fingersHistory:
+            return False
+
+        self._fingersHistory.append(len(hand.fingers))
+
+        lessFingers = False
+        if len(self._fingersHistory) == nbFramesAnalyzed:
+
+            lessFingers = self._fingersHistory[-1] == 0
+            lessFingers = lessFingers and self._fingersHistory[-1] < self._fingersHistory[0]
+
+            for i in range(1, len(self._fingersHistory)):
+                if self._fingersHistory[i - 1] < self._fingersHistory[i]:
+                    lessFingers = False
+
+            del self._fingersHistory[:]
+
+        return lessFingers
 
     def sendNewPosition(self, positionFromHand):
         send_long_command('object_move', {'tx': positionFromHand.z, 'ty': positionFromHand.x, 'tz': positionFromHand.y},
                 filters={'tx': 'coordinate', 'ty': 'coordinate', 'tz': 'coordinate'})
         time.sleep(0.02)
-        print('Moving object to {}'.format(positionFromHand))
-        # TODO send move object command
-
+ 
 class ScaleListener(Leap.Listener):
     """
     The scale gesture is detected when two hands are initially closed (no fingers visible).
@@ -252,3 +260,4 @@ class FingersListener(Leap.Listener):
             'vx': direction.x, 'vy': direction.y, 'vz': direction.z
         })
         print('Sending sculpt command pointing at ({}, {}, {})'.format(tip.x, tip.y, tip.z))
+
