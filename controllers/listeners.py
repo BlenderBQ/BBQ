@@ -37,9 +37,9 @@ class GrabListener(Leap.Listener):
             print('Grab.')
 
             if self._handOrigin is None:
-                self._handOrigin = hand.palm_position
+                self._handOrigin = hand.stabilized_palm_position
             else:
-                self._posHistory.append(hand.palm_position - self._handOrigin)
+                self._posHistory.append(hand.stabilized_palm_position - self._handOrigin)
 
             # When we have nbFramesAnalyzed positions in the list
             if len(self._posHistory) == self.nbFramesAnalyzed:
@@ -57,7 +57,7 @@ class GrabListener(Leap.Listener):
 
         # Grabbing
         if self._isGrabbing:
-            self.sendNewPosition(hand.palm_position - self._handOrigin)
+            self.sendNewPosition(hand.stabilized_palm_position - self._handOrigin)
             pass#TODO rotate
 
         # Ungrab
