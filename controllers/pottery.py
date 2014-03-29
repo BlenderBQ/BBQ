@@ -34,13 +34,12 @@ class PotteryListener(Leap.Listener):
         #if frame.hands.is_empty:
             #return
 
-        # handle only one hand
-        hand = frame.hands[0]
-
-        # handle command gestures
+        # handle leap native gestures
         for gesture in frame.gestures():
             if gesture.type == Leap.Gesture.TYPE_SWIPE:
                 self.swipe(gesture)
+
+        # handle custom gestures
 
     def swipe(self, gesture):
         swipe_time = time.time()
@@ -51,4 +50,4 @@ class PotteryListener(Leap.Listener):
         direction = -1 if swipe_gesture.direction[0] < 0 else 1
         self.rotation_level = max(-self.max_rotation_level, min(self.rotation_level + direction, self.max_rotation_level))
         speed = float(self.rotation_level) * self.max_rotation_speed / self.max_rotation_level
-        send_long_command('set_continuous_rotation', { 'speed': radians(speed) }, filters={ 'speed': 'angle' })
+        send_command('set_continuous_rotation', { 'speed': radians(speed) })

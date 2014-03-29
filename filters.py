@@ -15,7 +15,7 @@ class Filter(object):
         Compute the mean value over a number of past values.
         If the change is significant, return this mean value, otherwise return None.
         """
-        if not self.history:
+        if len(self.history) < 2:
             self.history.append(new_value)
             return new_value, True
 

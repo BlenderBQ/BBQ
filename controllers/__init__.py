@@ -8,6 +8,7 @@ from sculpt import SculptListener
 from pottery import PotteryListener
 from listeners import GrabListener
 from listeners import ScaleListener
+from listeners import CalmGestureListener
 
 # global leap controller
 leap_controller = Leap.Controller()
@@ -32,7 +33,7 @@ def set_current_controller(listener_clss):
         leap_controller.add_listener(lstn)
 
 if __name__ == '__main__':
-    set_current_controller([SculptListener, PotteryListener, GrabListener, ScaleListener])
+    set_current_controller([SculptListener, PotteryListener, GrabListener, ScaleListener, CalmGestureListener])
 
     # Keep this process running until Enter is pressed
     print "Press Enter to quit..."
