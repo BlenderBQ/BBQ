@@ -2,6 +2,7 @@ import bpy
 import socket
 import json
 import logging
+import mathutils
 
 def blendPos(dim):
     return dim / 50.0
@@ -39,6 +40,7 @@ class BBQOperator(bpy.types.Operator):
         self.transport.setblocking(False)
         self.sockfile = None
         self.move_origin = 0, 0, 0
+        self.scale_origin = 1, 1, 1
         _commands = [
             self.mode_sculpt,
             self.mode_object,
@@ -104,6 +106,29 @@ class BBQOperator(bpy.types.Operator):
         return {'RUNNING_MODAL'}
         # return context.window_manager.invoke_props_dialog(self)
 
+    def my_little_swinging_pot(self):
+        pass
+
+    def sculpt_touch(self, **kwargs):
+        x, y, z = kwargs['x'], kwargs['y'], kwargs['z']
+        vx, vy, vz = kwargs['vx'], kwargs['vy'], kwargs['vz']
+
+        dist = 0.42 # magic number
+        x2, y2, z2 = x + vx * dist, y + vy * dist, z + vz * dist
+
+        p1 = bpy.types.OperatorStrokeElement()
+        p1.is_start = True
+        p1.location = x, y, z
+        p1.pressure = 1.0
+        p1.time = 1.0
+
+        p2 = bpy.types.OperatorStrokeElement()
+        p2.is_start = False
+        p2.pressure = 1.0
+        p2.time = 1.0
+
+        bpy.ops.sculpt.brush_stroke(stroke=[p1, p2])
+
     def mode_set(self, mode):
         if bpy.context.area.type == 'VIEW_3D':
             bpy.ops.object.mode_set(mode=mode)
@@ -142,24 +167,34 @@ class BBQOperator(bpy.types.Operator):
     def object_move_origin(self, **kwargs):
         x, y, z = kwargs['x'], kwargs['y'], kwargs['z']
         self.move_origin = x, y, z
+        self.move_matrix_origin = bpy.context.area.spaces[0].region_3d.view_matrix
 
     def object_move(self, **kwargs):
         tx, ty, tz = kwargs['tx'], kwargs['ty'], kwargs['tz']
         x, y, z = self.move_origin
         dx, dy, dz = tx - x, ty - y, tz - z
         dx, dy, dz = map(blendPos, [dx, dy, dz])
+        # mat_trans = mathutils.Matrix.Translation((dx, dy, dz))
+        # loc = (self.move_matrix_origin * mat_trans).decompose()[0]
         for o in bpy.context.selected_objects:
-            o.location = (dx, dy, dz)
+            # o.location = loc
+            o.location = dx, dy, dz
 
     def object_rotate(self, **kwargs):
         ax, ay, az = kwargs['ax'], kwargs['ay'], kwargs['az']
         for o in bpy.context.selected_objects:
             o.rotation_euler = (ax, ay, az)
 
+    def object_scale_origin(self):
+        s = bpy.context.selected_objects[0].scale
+        self.scale_origin = s.x, s.y, s.z
+
     def object_scale(self, **kwargs):
-        sx, sy, sz = kwsrgs['sx'], kwsrgs['sy'], kwsrgs['sz']
+        sx, sy, sz = kwargs['sx'], kwargs['sy'], kwargs['sz']
+        x, y, z = self.scale_origin
+        dx, dy, dz = sx * x, sy * y, sz * z
         for o in bpy.context.selected_objects:
-            o.scale = (sx, sy, sz)
+            o.scale = (dx, dy, dz)
 
     def object_center(self):
         object_move(0, 0, 0)
