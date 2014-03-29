@@ -124,7 +124,6 @@ class BBQOperator(bpy.types.Operator):
 
         p2 = bpy.types.OperatorStrokeElement()
         p2.is_start = False
-        p2.location = x2, y2, z2
         p2.pressure = 1.0
         p2.time = 1.0
 
