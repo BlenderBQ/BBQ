@@ -25,6 +25,9 @@ if __name__ == '__main__':
     set_current_controller([GrabListener, ScaleListener, PotteryListener,
         CalmGestureListener])
 
+    # default mode
+    # set_current_controller('object')
+
     print 'Started: Ctrl-C to kill'
     try:
         while True:
