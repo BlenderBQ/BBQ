@@ -70,8 +70,8 @@ class GrabListener(Leap.Listener):
             pass#TODO rotate
 
         # Ungrab
-        if GrabMode.SEARCHING != self._grabModes and nbFingers == self.nbFingersMax:
-            self._grabModes = GrabMode.SEARCHING
+        if GrabMode.SEARCHING not in self._grabModes and nbFingers == self.nbFingersMax:
+            self._grabModes = [GrabMode.SEARCHING]
 
     def _isGrab(self, nbFingers):
         if self.nbFingersMax == nbFingers:
@@ -80,6 +80,6 @@ class GrabListener(Leap.Listener):
         return self._readyToGrab and nbFingers == 0
 
     def sendNewPosition(self, positionFromHand):
-        send_long_command('object_move_origin', {'x': positionFromHand.x, 'y': positionFromHand.y, 'z': positionFromHand.z})
+        send_command('object_move', {'tx': positionFromHand.x, 'ty': positionFromHand.y, 'tz': positionFromHand.z})
         print('Moving object to {}'.format(positionFromHand))
         # TODO send move object command
