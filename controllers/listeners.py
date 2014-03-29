@@ -20,7 +20,7 @@ class GrabListener(Leap.Listener):
 
         self._readyToGrab = False
         self._handOrigin = Leap.Vector()
-        self._historicPositions = []
+        self._history = []
         self._grabModes = [GrabMode.SEARCHING]
 
         self.nbFingersMax = nbFingersMax
@@ -32,6 +32,7 @@ class GrabListener(Leap.Listener):
         frame = controller.frame()
 
         if len(frame.hands) is not 1:
+            del self._history[:]
             return
 
         # Getting only the first hand
@@ -40,14 +41,14 @@ class GrabListener(Leap.Listener):
 
         # Grab: analysis of movement to find mode
         if GrabMode.SEARCHING in self._grabModes and self._isGrab(nbFingers):
-            self._historicPositions.append(hand.palm_position - self._handOrigin)
+            self._history.append(hand.palm_position - self._handOrigin)
 
             # When we have nbFramesAnalyzed positions in the list
-            if len(self._historicPositions) == self.nbFramesAnalyzed:
+            if len(self._history) == self.nbFramesAnalyzed:
                 sumDistances = 0
 
-                for i in xrange(len(self._historicPositions)):
-                    sumDistances += self._historicPositions[i].distance_to(self._historicPositions[i - 1])
+                for i in xrange(len(self._history)):
+                    sumDistances += self._history[i].distance_to(self._history[i - 1])
 
                 # We want to MOVE!!!
                 if sumDistances > self.threshold:
@@ -56,7 +57,7 @@ class GrabListener(Leap.Listener):
                     self._handOrigin = hand.palm_position
                     send_command('object_move_origin', {'x': self._handOrigin.z, 'y': self._handOrigin.x, 'z': self._handOrigin.y})
 
-                del self._historicPositions[:]
+                del self._history[:]
 
         # Grabbing
         elif GrabMode.MOVE in self._grabModes:
@@ -92,13 +93,12 @@ class ScaleListener(Leap.Listener):
     def __init__(self, threshold = 5, nbFramesAnalyzed = 10):
         Leap.Listener.__init__(self)
 
-        self._handOrigin = Leap.Vector()
         self._history = []
         self._isScaling = False
         self._initialFactor = 0
 
         self.nbFramesAnalyzed = nbFramesAnalyzed
-        self.threshold = threshold
+        self.threshold = threshold 
 
     def on_frame(self, controller):
         # Get the most recent frame
@@ -106,6 +106,7 @@ class ScaleListener(Leap.Listener):
 
         # Need at least two hands for this gesture
         if len(frame.hands) < 2:
+            del self._history[:]
             return
 
         hand1 = frame.hands[0]
@@ -114,6 +115,7 @@ class ScaleListener(Leap.Listener):
         # No (or few) fingers must be visible
         if (len(hand1.fingers) + len(hand2.fingers) > 1):
             self._isScaling = False
+            del self._history[:]
             return
 
         # Distance between the two hands
@@ -124,6 +126,10 @@ class ScaleListener(Leap.Listener):
         if not self._isScaling:
             self._history.append(displacement)
 
+            # Limit history length to nbFramesAnalyzed
+            if len(self._history) > self.nbFramesAnalyzed:
+                self._history = self._history[:-len(self._history)]
+
             # Start scaling if hands move apart enough
             # (must happen between nbFramesAnalyzed frames)
             variation = 0
@@ -131,18 +137,12 @@ class ScaleListener(Leap.Listener):
                 variation = self._history[i].magnitude - self._history[i-1].magnitude
 
             if abs(variation) >= self.threshold:
-                startScaling(mag)
-
-            # Limit history length to nbFramesAnalyzed
-            n = len(self._history)
-            if n > self.nbFramesAnalyzed:
-                n -= self.nbFramesAnalyzed
-                self._history = self._history[n:]
+                self.startScaling(mag)
 
         # Send the scaling command
         else:
             # Scale back the magnitude between 0 and 1 (make smaller) or > 1 (make bigger)
-            self.sendNewScalingFactor(mag / self._initialFactor)
+            self.sendNewScalingFactor(mag / self._initialFactor) 
 
     def startScaling(self, currentMagnitude):
         self._initialFactor = currentMagnitude
@@ -150,8 +150,8 @@ class ScaleListener(Leap.Listener):
         # Clear history (it is not needed when movement is activated)
         del self._history[:]
 
-        send_command('object_scale_origin')
-        print('Starting to scale object')    
+        send_command('object_scale_origin', {})
+        print('Starting to scale object')  
 
     def sendNewScalingFactor(self, factor):
         send_long_command('object_scale', {
@@ -163,3 +163,54 @@ class ScaleListener(Leap.Listener):
         )
         time.sleep(0.02)
         print('Scaling object of factor {}'.format(factor))
+
+class CalmGestureListener(Leap.Listener):
+    """
+    The "calm down" gesture is activated when a fully opened hand is lowered.
+    """
+    def __init__(self, threshold = 7, nbFramesAnalyzed = 50):
+        Leap.Listener.__init__(self)
+
+        self._handOrigin = Leap.Vector()
+        self._history = []
+
+        self.nbFramesAnalyzed = nbFramesAnalyzed
+        self.threshold = threshold
+
+    def on_frame(self, controller):
+        # Get the most recent frame
+        frame = controller.frame()
+
+        # Need exactly one hand for this gesture
+        if len(frame.hands) is not 1:
+            del self._history[:]
+            return
+
+        hand = frame.hands[0]
+
+        # About five fingers must be visible
+        if len(hand.fingers) < 4:
+            del self._history[:]
+            return
+        altitude = hand.stabilized_palm_position.y
+
+        self._history.append(altitude)
+        # Limit history size
+        if len(self._history) > self.nbFramesAnalyzed:
+            self._history[:-self.nbFramesAnalyzed]
+        # Hand must not be going up
+        elif len(self._history) >= 2:
+            if self._history[-2] < self._history[-1]:
+                return
+
+        # Activate the gesture if there's enough vertical change
+        variation = 0
+        for i in range(1, len(self._history)):
+            variation = self._history[i] - self._history[i-1]
+        if -variation >= self.threshold:
+            self.activateGesture()
+
+    def activateGesture(self):
+        del self._history[:]
+        send_command('set_continuous_rotation', { 'speed': 0 })
+        print('Setting rotation speed to 0')
