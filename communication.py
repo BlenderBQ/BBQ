@@ -10,7 +10,7 @@ from filters import Filter, CompositeFilter
 clients = []
 
 # TODO remove this, used for debugging
-from pprint import pprint
+from pprint import pformat
 dont_use_network = False
 
 _lock = threading.Lock()
@@ -23,7 +23,7 @@ def send_command(name, data):
     with _lock:
         data['__cmd__'] = name
         if dont_use_network:
-            pprint('Sending:', data)
+            print 'Sending:', pformat(data)
             return
         jdata = json.dumps(data) + '\n'
         for c in clients:
