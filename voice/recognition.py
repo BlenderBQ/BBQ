@@ -21,7 +21,7 @@ class VoiceRecognition(object):
         asr.connect('result', self.asr_result)
 
         # Language model: http://www.speech.cs.cmu.edu/tools/lmtool-new.html
-        this_dir = os.path.dirname(os.path.realpath(__name__))
+        this_dir = os.path.dirname(os.path.realpath(__file__))
         asr.set_property('lm', os.path.join(this_dir, 'words.lm'))
         asr.set_property('dict', os.path.join(this_dir, 'words.dic'))
         asr.set_property('configured', True)
@@ -41,11 +41,11 @@ class VoiceRecognition(object):
         self.is_active = not self.is_active
 
     def asr_partial_result(self, asr, text, utterance_id):
-        print 'asr_partial_result:', text
+        #print 'asr_partial_result:', text
         self.on_partial_result(text)
 
     def asr_result(self, asr, text, utterance_id):
-        print 'asr_result:', text
+        #print 'asr_result:', text
         self.on_result(text)
         #self.pipeline.set_state(gst.STATE_PAUSED)
 
