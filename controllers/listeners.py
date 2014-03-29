@@ -16,7 +16,7 @@ class GrabListener(Leap.Listener):
     """
     The grab gesture is detected when nbFingersMax disappear at once
     """
-    def __init__(self, nbFingersMax = 5, threshold = 15, nbFramesAnalyzed = 10):
+    def __init__(self, nbFingersMax=5, threshold=15, nbFramesAnalyzed=10):
         Leap.Listener.__init__(self)
 
         self._readyToGrab = False
@@ -80,6 +80,6 @@ class GrabListener(Leap.Listener):
         return self._readyToGrab and nbFingers == 0
 
     def sendNewPosition(self, positionFromHand):
-        send_long_command('object_move_origin', {'x': positionFromHand.x, 'y': positionFromHand.y, 'z': positionFromHand.z})
+        send_long_command('object_move_origin', {'tx': positionFromHand.x, 'ty': positionFromHand.y, 'tz': positionFromHand.z}, filters={'tx': 'float', 'ty': 'float', 'tz': 'float'})
         print('Moving object to {}'.format(positionFromHand))
         # TODO send move object command

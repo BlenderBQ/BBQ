@@ -26,7 +26,8 @@ def send_command(name, data):
 
 _filters = {}
 _filter_mapping = {
-        'position': None
+        'float': Filter,
+        'position': lambda: CompositeFilter(n=3)
         }
 
 def send_long_command(self, name, data, filters=None):
