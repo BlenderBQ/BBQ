@@ -4,24 +4,9 @@ sys.path.insert(0, os.path.join(this_dir, 'lib'))
 import Leap
 
 import socket
-import threading
-from controllers import set_current_controller, disable_current_controller
-from controllers import SculptListener
-from communication.server import server_socket
-
-clients = []
-_lock = threading.Lock()
-
-def send_command(name, data):
-    with _lock:
-        data['__cmd__'] = name
-        jdata = json.dumps(data) + '\n'
-        for c in clients:
-            try:
-                c.send(jdata)
-            except IOError as e:
-                logging.exception(e)
-                clients.remove(c)
+from controllers import (set_current_controller, disable_current_controller,
+        SculptListener)
+from communication.server import clients
 
 if __name__ == '__main__':
     socket_path = 'server.sock'
@@ -41,7 +26,7 @@ if __name__ == '__main__':
         sock.close()
         for pipe in clients:
             pipe.close()
-        os.remove(sock_path)
+        os.remove(socket_path)
 #
 #     with server_socket:
 #         try:

@@ -3,32 +3,27 @@ import json
 import socket
 import threading
 
-socket_path = 'server.sock'
+_lock = threading.Lock()
 
-class CommandServer(object):
-    def __init__(self):
-        self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        self._lock = threading.Lock()
+clients = []
 
-    def __enter__(self):
-        self.setup()
+def send_command(name, data):
+    """
+    Send a command: name is the target function's name, data is the target
+    function's kwargs.
+    """
+    with _lock:
+        data['__cmd__'] = name
+        jdata = json.dumps(data) + '\n'
+        for c in clients:
+            try:
+                c.send(jdata)
+            except IOError as e:
+                logging.exception(e)
+                clients.remove(c)
 
-    def __exit__(self, *args, **kwargs):
-        self.cleanup()
-
-    def setup(self):
-        self.sock.bind(socket_path)
-        self.sockfile = self.sock.makefile()
-
-    def cleanup(self):
-        self.sock.shutdown(socket.SHUT_RDWR)
-        self.sock.close()
-        os.remove(socket_path)
-
-    def send_command(self, name, data):
-        with self._lock:
-            data['__cmd__'] = name
-            self.sockfile.write(json.dumps(data) + '\n')
-            self.sockfile.flush()
-
-server_socket = CommandServer()
+def send_long_command(self, name, data, filters=None):
+    if filters is None:
+        filters = {}
+    # TODO
+    return send_command(name, data)
