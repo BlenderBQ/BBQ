@@ -75,7 +75,8 @@ class GrabListener(Leap.Listener):
         return self._readyToGrab and nbFingers == 0
 
     def sendNewPosition(self, positionFromHand):
-        send_long_command('object_move', {'tx': positionFromHand.z, 'ty': positionFromHand.x, 'tz': positionFromHand.y}, filters={'tx': 'float', 'ty': 'float', 'tz': 'float'})
+        send_long_command('object_move', {'tx': positionFromHand.z, 'ty': positionFromHand.x, 'tz': positionFromHand.y},
+                filters={'tx': 'coordinate', 'ty': 'coordinate', 'tz': 'coordinate'})
         time.sleep(0.02)
  
 class ScaleListener(Leap.Listener):
@@ -106,7 +107,7 @@ class ScaleListener(Leap.Listener):
 
         hand1 = frame.hands[0]
         hand2 = frame.hands[1]
-  
+
         # No (or few) fingers must be visible
         if (len(hand1.fingers) + len(hand2.fingers) > 1):
             self._isScaling = False
@@ -151,11 +152,11 @@ class ScaleListener(Leap.Listener):
 
     def sendNewScalingFactor(self, factor):
         send_long_command('object_scale', {
-            'sx': factor, 
-            'sy': factor, 
+            'sx': factor,
+            'sy': factor,
             'sz': factor
             },
-            filters={'sx': 'float', 'sy': 'float', 'sz': 'float'}
+            filters={'sx': 'coordinate', 'sy': 'coordinate', 'sz': 'coordinate'}
         )
         time.sleep(0.02)
         print('Scaling object of factor {}'.format(factor))

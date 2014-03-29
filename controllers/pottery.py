@@ -1,5 +1,6 @@
 import os, sys
 import time
+from math import radians
 this_dir = os.path.dirname(os.path.realpath(__name__))
 sys.path.insert(0, os.path.join(this_dir, '..', 'lib'))
 import Leap
@@ -51,6 +52,7 @@ class PotteryListener(Leap.Listener):
 
     def do_swipe(self, swipe_gesture):
         direction = -1 if swipe_gesture.direction[0] < 0 else 1
-        self.rotation_level = min(max(self.rotation_level + direction,
-            -self.max_rotation_speed), self.max_rotation_speed)
-        send_long_command('set_continuous_rotation', { 'speed': float(self.rotation_level) * self.max_rotation_speed / self.max_rotation_level }, filters={ 'speed': 'float' })
+        self.rotation_level = max(-self.max_rotation_level, min(self.rotation_level + direction, self.max_rotation_level))
+        print self.rotation_level
+        speed = float(self.rotation_level) * self.max_rotation_speed / self.max_rotation_level
+        send_long_command('set_continuous_rotation', { 'speed': radians(speed) }, filters={ 'speed': 'angle' })
