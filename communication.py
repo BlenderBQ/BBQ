@@ -29,7 +29,7 @@ _filter_mapping = {
         'position': None
         }
 
-def send_long_command(self, name, data, filters=None):
+def send_long_command(name, data, filters=None):
     """
     Send a command which can be sent many times per frame, in which case
     filters can be specified for certain arguments.
