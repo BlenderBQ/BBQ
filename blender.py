@@ -3,6 +3,22 @@ import socket
 import json
 import logging
 
+def mode_set(mode):
+    if bpy.context.area.type == 'VIEW_3D':
+        bpy.ops.object.mode_set(mode=mode)
+
+def mode_sculpt():
+    mode_set('SCULPT')
+
+def mode_object():
+    mode_set('OBJECT')
+
+def mode_texture_paint():
+    mode_set('TEXTURE_PAINT')
+
+def mode_edit():
+    mode_set('EDIT')
+
 def view_numpad(view):
     if bpy.context.area.type == 'VIEW_3D':
         bpy.ops.view3d.viewnumpad(type=view)
@@ -83,7 +99,7 @@ class BBQOperator(bpy.types.Operator):
 
     def modal(self, context, event):
         try:
-            cmd, args = read_command(self.sockfile)
+            cmd, args = read_command(self.transport)
         except IOError as e:
             logging.exception(e)
         else:
