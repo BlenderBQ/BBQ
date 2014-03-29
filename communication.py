@@ -35,7 +35,8 @@ def send_command(name, data):
 
 _filters = {}
 _filter_mapping = {
-        'float': Filter,
+        'angle': Filter,#lambda: Filter(threshold=0.005),
+        'coordinate': Filter,
         'position': lambda: CompositeFilter(n=3)
         }
 
@@ -52,6 +53,7 @@ def send_long_command(name, data, filters=None):
         assert arg in data, "Comment t'es trop nul ! (t'as mis un filtre sur un truc qui existe pas)"
         _filters.setdefault(name, {})
         if filter_key not in _filters[name]:
+            assert filter_key in _filter_mapping, "Comment t'es trop nul ! (t'as mis un filtre qui existe pas)"
             _filters[name][arg] = _filter_mapping[filter_key]()
         new_value, interesting = _filters[name][arg].apply(data[arg])
         if not interesting:

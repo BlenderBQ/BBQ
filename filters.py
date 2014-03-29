@@ -3,10 +3,10 @@ import random
 class Filter(object):
     """Automatic filtering based on history: if there's not enough change, no need to send the command"""
 
-    def __init__(self):
+    def __init__(self, window_length=5, threshold=0.01):
         super(Filter, self).__init__()
-        self.window_length = 5
-        self.threshold = 0.01 # Need at least 1% change in value to be interesting
+        self.window_length = window_length
+        self.threshold = threshold # Need at least 1% change in value to be interesting
         self.history = []
 
     def apply(self, new_value):
