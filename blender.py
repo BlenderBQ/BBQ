@@ -16,6 +16,32 @@ def view_left():
 def view_right():
     view_numpad('RIGHT')
 
+def view_camera():
+    view_numpad('CAMERA')
+
+def object_move(x, y, z):
+    for o in bpy.context.selected_objects:
+        o.location = (x, y, z)
+
+def object_rotate(ax, ay, az):
+    for o in bpy.context.selected_objects:
+        o.rotation_euler = (ax, ay, az)
+
+# class TranslationOperator:
+#     @classmethod
+#     def poll(cls, context):
+#         return context.selected_objects != []
+#
+#     def modal(self, context, event):
+#         if event.type == 'ESC':
+#             return {'CANCELLED'}
+#         return {'RUNNING_MODAL'}
+#
+#     def invoke(self, context, event):
+#         self.x_init = event.mouse_x
+#         self.y_init = event.mouse_y
+#         return {'RUNNING_MODAL'}
+
 class BBQOperator(bpy.types.Operator):
     bl_idname = "object.bbq"
     bl_label = "BBQ Operator"
@@ -34,6 +60,8 @@ class BBQOperator(bpy.types.Operator):
         pass
 
     def modal(self, context, event):
+        object_move(event.mouse_x / 100, event.mouse_y / 100, 0)
+        object_rotate(event.mouse_x / 100, event.mouse_y / 100, 0)
         if event.type == 'LEFTMOUSE':
             view_top()
         elif event.type == 'RIGHTMOUSE':
