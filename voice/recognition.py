@@ -4,10 +4,13 @@ pygst.require('0.10')
 import gobject
 gobject.threads_init()
 import gst
+import threading
+from commands import interpret_command
 
 class VoiceRecognition(object):
     def __init__(self):
         self.is_active = False
+        self.is_interpreting = True
         self.pipeline = gst.parse_launch(('gconfaudiosrc ! audioconvert ! audioresample '
             '! vader name=vad auto_threshold=true '
             '! pocketsphinx name=asr ! fakesink'))
@@ -18,15 +21,10 @@ class VoiceRecognition(object):
         asr.connect('result', self.asr_result)
 
         # Language model: http://www.speech.cs.cmu.edu/tools/lmtool-new.html
-        this_dir = os.path.dirname(os.path.realpath(__name__))
+        this_dir = os.path.dirname(os.path.realpath(__file__))
         asr.set_property('lm', os.path.join(this_dir, 'words.lm'))
         asr.set_property('dict', os.path.join(this_dir, 'words.dic'))
         asr.set_property('configured', True)
-
-        # setup bus
-        bus = self.pipeline.get_bus()
-        bus.add_signal_watch()
-        bus.connect('message::application', self.application_message)
 
     def start(self):
         self.pipeline.set_state(gst.STATE_PLAYING)
@@ -43,37 +41,31 @@ class VoiceRecognition(object):
         self.is_active = not self.is_active
 
     def asr_partial_result(self, asr, text, utterance_id):
-        print 'asr_partial_result:', text
-        struct = gst.Structure('partial_result')
-        struct.set_value('hyp', text)
-        struct.set_value('uttid', utterance_id)
-        asr.post_message(gst.message_new_application(asr, struct))
+        #print 'asr_partial_result:', text
+        self.on_partial_result(text)
 
     def asr_result(self, asr, text, utterance_id):
-        print 'asr_result:', text
-        struct = gst.Structure('result')
-        struct.set_value('hyp', text)
-        struct.set_value('uttid', utterance_id)
-        asr.post_message(gst.message_new_application(asr, struct))
-
-    def application_message(self, bus, msg):
-        msgtype = msg.structure.get_name()
-        print 'application_message'
-        if msgtype == 'result':
-            self.on_result(msg.structure['hyp'])
-            self.pipeline.set_state(gst.STATE_PAUSED)
-        elif msgtype == 'partial_result':
-            self.on_partial_result(msg.structure['hyp'])
+        #print 'asr_result:', text
+        self.on_result(text)
+        #self.pipeline.set_state(gst.STATE_PAUSED)
 
     def on_partial_result(self, text):
-        pass#print 'on_partial_result:', text
+        pass#print 'partial_result:', text
 
     def on_result(self, text):
-        """
-        Receive an entirely interpreted result from Automatic Voice
-        Recognition from a different thread.
-        """
-        print 'on_result:', text
+        #print 'result:', text
+        if not text.strip() or len(text.split()) > 1:
+            print 'empty text'
+            return
+        cmd = text.lower()
+        if cmd == 'sleep':
+            print 'going to sleep'
+            self.is_interpreting = False
+        elif cmd == 'wake':
+            print 'waking up'
+            self.is_interpreting = True
+        elif self.is_interpreting:
+            interpret_command(cmd)
 
 if __name__ == '__main__':
     vr = VoiceRecognition()

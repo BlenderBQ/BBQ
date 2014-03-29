@@ -14,7 +14,7 @@ from pprint import pformat
 dont_use_network = False
 
 _lock = threading.Lock()
-def send_command(name, data):
+def send_command(name, data={}):
     """
     Send a command: name is the target function's name, data is the target
     function's kwargs.
