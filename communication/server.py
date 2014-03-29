@@ -25,7 +25,7 @@ class CommandServer(object):
 
     def send_command(self, name, data):
         data['__cmd__'] = name
-        json.dump(data, self.sockfile)
+        self.sockfile.write(json.dumps(data) + '\n')
         self.sockfile.flush()
 
 server_socket = CommandServer()

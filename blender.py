@@ -37,8 +37,18 @@ def object_center():
     object_move(0, 0, 0)
 
 def read_command(transport):
-    data = json.loads(transport.readline())
-    return None, None
+    try:
+        data = json.loads(transport.readline())
+    except ValueError:
+        raise IOError()
+
+    try:
+        cmd = data['__cmd__']
+        del data['__cmd__']
+    except KeyError:
+        raise IOError()
+
+    return cmd, data
 
 class BBQOperator(bpy.types.Operator):
     bl_idname = "object.bbq"
@@ -46,15 +56,19 @@ class BBQOperator(bpy.types.Operator):
 
     # TODO use Blender's Properties
     # sock_addr = bpy.props.StringProperty(name="Server address")
-    sock_addr = '/tmp/bbq'
+    sock_path = 'server.sock'
 
     def __init__(self):
         print("Start")
         self.transport = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         self.transport.setblocking(False)
+        self.sockfile = None
 
     def __del__(self):
+        self.transport.shutdown(socket.SHUT_RDWR)
         self.transport.close()
+        if self.sockfile:
+            self.sockfile.close()
         print("End")
 
     @classmethod
@@ -71,6 +85,7 @@ class BBQOperator(bpy.types.Operator):
             pass
         else:
             # Do something
+            print(cmd, args)
         # object_move(event.mouse_x / 100, event.mouse_y / 100, 0)
         # object_rotate(event.mouse_x / 100, event.mouse_y / 100, 0)
         # object_scale(event.mouse_x / 1000, event.mouse_y / 1000, 0)
@@ -85,8 +100,8 @@ class BBQOperator(bpy.types.Operator):
 
     def invoke(self, context, event):
         try:
-            self.transport.connect(self.sock_addr)
-            self.transport = self.transport.makefile()
+            self.transport.connect(self.sock_path)
+            self.sockfile = self.transport.makefile()
         except IOError:
             return {'CANCELLED'}
 
