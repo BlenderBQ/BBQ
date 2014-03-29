@@ -19,7 +19,7 @@ if __name__ == '__main__':
         while True:
             pipe, _ = sock.accept()
             clients.append(pipe)
-    except (KeyboardInterrupt, EOFError):
+    except KeyboardInterrupt:
         print 'Done'
     finally:
         disable_current_controller()
