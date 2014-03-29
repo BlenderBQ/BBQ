@@ -48,11 +48,7 @@ class PotteryListener(Leap.Listener):
             return
         self.last_swipe_time = swipe_time
         swipe_gesture = SwipeGesture(gesture)
-        self.do_swipe(swipe_gesture)
-
-    def do_swipe(self, swipe_gesture):
         direction = -1 if swipe_gesture.direction[0] < 0 else 1
         self.rotation_level = max(-self.max_rotation_level, min(self.rotation_level + direction, self.max_rotation_level))
-        print self.rotation_level
         speed = float(self.rotation_level) * self.max_rotation_speed / self.max_rotation_level
         send_long_command('set_continuous_rotation', { 'speed': radians(speed) }, filters={ 'speed': 'angle' })
