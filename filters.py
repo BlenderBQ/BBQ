@@ -15,22 +15,24 @@ class Filter(object):
         Compute the mean value over a number of past values.
         If the change is significant, return this mean value, otherwise return None.
         """
-        if len(self.history) <= 0:
+        if len(self.history) < 2:
             self.history.append(new_value)
             return new_value, True
 
+        # compute previous mean
         mean = 0
-        for i in xrange(0, self.window_length - 1):
+        for i in xrange(self.window_length - 1):
             index = max(0, len(self.history) - i - 1)
-            mean = mean + self.history[index]
-
+            mean += self.history[index]
         previous = mean / (self.window_length - 1)
 
         self.history.append(new_value)
-        mean = mean + new_value
+        if len(self.history) > self.window_length:
+            self.history = self.history[-self.window_length:]
         mean = (mean + new_value) / self.window_length
 
-        interesting = (abs(mean - previous) / previous > self.threshold)
+        value = abs(mean - previous) / previous
+        interesting = (value > self.threshold)
         return mean, interesting
 
 
