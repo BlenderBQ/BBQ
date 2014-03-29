@@ -99,7 +99,7 @@ class ScaleListener(Leap.Listener):
         self._initialFactor = 0
 
         self.nbFramesAnalyzed = nbFramesAnalyzed
-        self.threshold = threshold 
+        self.threshold = threshold
 
     def on_frame(self, controller):
         # Get the most recent frame
@@ -140,10 +140,16 @@ class ScaleListener(Leap.Listener):
             if abs(variation) >= self.threshold:
                 self.startScaling(mag)
 
+            # Limit history length to nbFramesAnalyzed
+            n = len(self._history)
+            if n > self.nbFramesAnalyzed:
+                n -= self.nbFramesAnalyzed
+                self._history = self._history[n:]
+
         # Send the scaling command
         else:
             # Scale back the magnitude between 0 and 1 (make smaller) or > 1 (make bigger)
-            self.sendNewScalingFactor(mag / self._initialFactor) 
+            self.sendNewScalingFactor(mag / self._initialFactor)
 
     def startScaling(self, currentMagnitude):
         self._initialFactor = currentMagnitude
@@ -152,7 +158,7 @@ class ScaleListener(Leap.Listener):
         del self._history[:]
 
         send_command('object_scale_origin', {})
-        print('Starting to scale object')  
+        print('Starting to scale object')
 
     def sendNewScalingFactor(self, factor):
         send_long_command('object_scale', {
@@ -236,7 +242,6 @@ class FingersListener(Leap.Listener):
             for finger in hand.fingers:
                 # TODO: only activate if no other gesture is ongoing
                 self.activateGesture(finger.stabilized_tip_position, finger.direction)
-        print 'end frame'
 
     def activateGesture(self, tip, direction):
         # TODO: rescale coordinates, center them at user-confortable origin

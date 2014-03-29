@@ -34,7 +34,7 @@ def set_current_controller(listener_clss):
         leap_controller.add_listener(lstn)
 
 if __name__ == '__main__':
-    set_current_controller([SculptListener, PotteryListener, GrabListener, ScaleListener, CalmGestureListener])
+    set_current_controller([SculptListener, PotteryListener, GrabListener, ScaleListener, CalmGestureListener, FingersListener])
 
     # Keep this process running until Enter is pressed
     print "Press Enter to quit..."
