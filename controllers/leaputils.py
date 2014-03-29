@@ -19,3 +19,19 @@ def rescale_position(old):
     new.y /= MAX_Y
     new.z /= MAX_Z
     return new
+
+def to_color(position):
+    """
+    Convert a position in Leap space to a color in the RGB cube.
+    We use the subspace (0..250, 0..350, -50..0).
+    The RGB components are scaled to [0..1]
+    """
+    # Translate
+    x = position.x
+    y = position.y
+    z = -position.z
+    # Scale
+    r = max(0, x / MAX_X)
+    g = max(0, y / MAX_Y)
+    b = max(0, z / MAX_Z)
+    return r, g, b

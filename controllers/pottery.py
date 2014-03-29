@@ -16,7 +16,7 @@ class PotteryListener(Leap.Listener):
         self.max_rotation_level = 5.
 
         # max rotation speed
-        rotation_inc = 360.
+        rotation_inc = 12.42
         self.max_rotation_speed = self.max_rotation_level * rotation_inc
 
         # swipe ttl
@@ -51,3 +51,4 @@ class PotteryListener(Leap.Listener):
         self.rotation_level = max(-self.max_rotation_level, min(self.rotation_level + direction, self.max_rotation_level))
         speed = float(self.rotation_level) * self.max_rotation_speed / self.max_rotation_level
         send_command('set_continuous_rotation', { 'speed': radians(speed) })
+        print('Affiche qqch espece de connard')
