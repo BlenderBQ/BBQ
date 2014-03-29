@@ -41,6 +41,7 @@ class BBQOperator(bpy.types.Operator):
         self.sockfile = None
         self.move_origin = 0, 0, 0
         self.scale_origin = 1, 1, 1
+        self.continuous_speed = 0
         _commands = [
             self.mode_sculpt,
             self.mode_object,
@@ -55,7 +56,10 @@ class BBQOperator(bpy.types.Operator):
             self.object_rotate,
             self.object_scale_origin,
             self.object_scale,
-            self.object_center
+            self.object_center,
+            self.set_continuous_rotation,
+            self.my_little_swinging_vase,
+            self.sculpt_touch
         ]
         self.commands = {f.__name__: f for f in _commands}
         self._timer = None
@@ -108,11 +112,15 @@ class BBQOperator(bpy.types.Operator):
         return {'RUNNING_MODAL'}
         # return context.window_manager.invoke_props_dialog(self)
 
-    def my_little_swinging_vase(self):
+    def my_little_swinging_vase(self, **kwargs):
+        print('coucou', self.continuous_speed)
         for o in bpy.context.selected_objects:
             angle = o.rotation_euler.copy()
-            angle.z += 0.02
+            angle.z += self.continuous_speed
             o.rotation_euler = angle
+
+    def set_continuous_rotation(self, **kwargs):
+        self.continuous_speed = kwargs['speed']
 
     def sculpt_touch(self, **kwargs):
         x, y, z = kwargs['x'], kwargs['y'], kwargs['z']

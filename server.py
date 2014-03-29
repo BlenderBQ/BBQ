@@ -5,11 +5,12 @@ import Leap
 
 import socket
 from controllers import (set_current_controller, disable_current_controller,
-        SculptListener, GrabListener, ScaleListener)
+        SculptListener, GrabListener, ScaleListener, CalmGestureListener)
+from controllers.pottery import PotteryListener
 from communication import clients
 from communication import send_command
-if os.name != 'mac'
-    from voice import VoiceRecognition
+# if os.name != 'mac':
+#     from voice import VoiceRecognition
 
 if __name__ == '__main__':
     socket_path = 'server.sock'
@@ -17,11 +18,12 @@ if __name__ == '__main__':
     sock.bind(socket_path)
     sock.listen(0)
 
-    if os.name != 'mac'
-        vr = VoiceRecognition()
-        vr.start()
+    # if os.name != 'mac':
+    #     vr = VoiceRecognition()
+    #     vr.start()
 
-    set_current_controller([GrabListener, ScaleListener])
+    set_current_controller([GrabListener, ScaleListener, PotteryListener,
+        CalmGestureListener])
 
     print 'Started: Ctrl-C to kill'
     try:
