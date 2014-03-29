@@ -2,6 +2,7 @@ import bpy
 import socket
 import json
 import logging
+import mathutils
 
 def blendPos(dim):
     return dim / 50.0
@@ -39,6 +40,7 @@ class BBQOperator(bpy.types.Operator):
         self.transport.setblocking(False)
         self.sockfile = None
         self.move_origin = 0, 0, 0
+        self.scale_origin = 1, 1, 1
         _commands = [
             self.mode_sculpt,
             self.mode_object,
@@ -142,24 +144,33 @@ class BBQOperator(bpy.types.Operator):
     def object_move_origin(self, **kwargs):
         x, y, z = kwargs['x'], kwargs['y'], kwargs['z']
         self.move_origin = x, y, z
+        self.move_matrix_origin = bpy.context.area.spaces[0].region_3d.view_matrix
 
     def object_move(self, **kwargs):
         tx, ty, tz = kwargs['tx'], kwargs['ty'], kwargs['tz']
         x, y, z = self.move_origin
         dx, dy, dz = tx - x, ty - y, tz - z
         dx, dy, dz = map(blendPos, [dx, dy, dz])
+        mat_trans = mathutils.Matrix.Translation((dx, dy, dz))
+        loc = (self.move_matrix_origin * mat_trans).decompose()[0]
         for o in bpy.context.selected_objects:
-            o.location = (dx, dy, dz)
+            o.location = loc
 
     def object_rotate(self, **kwargs):
         ax, ay, az = kwargs['ax'], kwargs['ay'], kwargs['az']
         for o in bpy.context.selected_objects:
             o.rotation_euler = (ax, ay, az)
 
+    def object_scale_origin(self):
+        s = bpy.context.selected_objects[0].scale
+        self.scale_origin = s.x, s.y, s.z
+
     def object_scale(self, **kwargs):
-        sx, sy, sz = kwsrgs['sx'], kwsrgs['sy'], kwsrgs['sz']
+        sx, sy, sz = kwargs['sx'], kwargs['sy'], kwargs['sz']
+        x, y, z = self.scale_origin
+        dx, dy, dz = sx * x, sy * y, sz * z
         for o in bpy.context.selected_objects:
-            o.scale = (sx, sy, sz)
+            o.scale = (dx, dy, dz)
 
     def object_center(self):
         object_move(0, 0, 0)

@@ -5,7 +5,7 @@ import Leap
 
 import socket
 from controllers import (set_current_controller, disable_current_controller,
-        SculptListener, GrabListener)
+        SculptListener, GrabListener, ScaleListener)
 from communication import clients
 from communication import send_command
 
@@ -15,7 +15,7 @@ if __name__ == '__main__':
     sock.bind(socket_path)
     sock.listen(0)
 
-    set_current_controller([GrabListener])
+    set_current_controller([GrabListener, ScaleListener])
 
     print 'Started: Ctrl-C to kill'
     try:
