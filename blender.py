@@ -113,7 +113,6 @@ class BBQOperator(bpy.types.Operator):
         # return context.window_manager.invoke_props_dialog(self)
 
     def my_little_swinging_vase(self, **kwargs):
-        print('coucou', self.continuous_speed)
         for o in bpy.context.selected_objects:
             angle = o.rotation_euler.copy()
             angle.z += self.continuous_speed
