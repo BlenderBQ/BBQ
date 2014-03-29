@@ -70,8 +70,8 @@ class GrabListener(Leap.Listener):
             pass#TODO rotate
 
         # Ungrab
-        if GrabMode.SEARCHING != self._grabModes and nbFingers == self.nbFingersMax:
-            self._grabModes = GrabMode.SEARCHING
+        if GrabMode.SEARCHING not in self._grabModes and nbFingers == self.nbFingersMax:
+            self._grabModes = [GrabMode.SEARCHING]
 
     def _isGrab(self, nbFingers):
         if self.nbFingersMax == nbFingers:

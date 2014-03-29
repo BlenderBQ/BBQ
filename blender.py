@@ -4,7 +4,7 @@ import json
 import logging
 
 def blendPos(dim):
-    return dim / 1000.0
+    return dim / 100.0
 
 def read_command(transport):
     try:
@@ -81,6 +81,7 @@ class BBQOperator(bpy.types.Operator):
         else:
             if cmd:
                 func, kwargs = cmd
+                print(func, kwargs)
                 if func in self.commands:
                     self.commands[func](**kwargs)
 
