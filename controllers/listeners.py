@@ -56,15 +56,12 @@ class GrabListener(Leap.Listener):
                     self._grabModes.remove(GrabMode.SEARCHING)
                     self._grabModes.append(GrabMode.MOVE)
                     self._handOrigin = hand.palm_position
-                    send_command('object_move_origin', {'x': self._handOrigin.y, 'y': self._handOrigin.z, 'z': self._handOrigin.x})
-
-                    for j in range(len(self._historicPositions) - 1):
-                        self.sendNewPosition(self._historicPositions[j] - self._handOrigin)
+                    send_command('object_move_origin', {'x': self._handOrigin.z, 'y': self._handOrigin.x, 'z': self._handOrigin.y})
 
                 del self._historicPositions[:]
 
         # Grabbing
-        if GrabMode.MOVE in self._grabModes:
+        elif GrabMode.MOVE in self._grabModes:
             self.sendNewPosition(hand.palm_position - self._handOrigin)
 
         if GrabMode.ROTATE in self._grabModes:
@@ -81,7 +78,7 @@ class GrabListener(Leap.Listener):
         return self._readyToGrab and nbFingers == 0
 
     def sendNewPosition(self, positionFromHand):
-        send_long_command('object_move', {'tx': positionFromHand.y, 'ty': positionFromHand.z, 'tz': positionFromHand.x}, filters={'tx': 'float', 'ty': 'float', 'tz': 'float'})
+        send_long_command('object_move', {'tx': positionFromHand.z, 'ty': positionFromHand.x, 'tz': positionFromHand.y}, filters={'tx': 'float', 'ty': 'float', 'tz': 'float'})
         time.sleep(0.02)
         print('Moving object to {}'.format(positionFromHand))
         # TODO send move object command
