@@ -19,7 +19,7 @@ class GrabListener(Leap.Listener):
         Leap.Listener.__init__(self)
 
         self._readyToGrab = False
-        self._handOrigin = Leap.Vector()
+        self._handOrigin = None
         self._historicPositions = []
         self._grabModes = [GrabMode.SEARCHING]
 
@@ -36,11 +36,12 @@ class GrabListener(Leap.Listener):
 
         # Getting only the first hand
         hand = frame.hands[0]
-        nbFingers = len(hand.fingers)
+        fingers = hand.fingers
 
         # Grab: analysis of movement to find mode
-        if GrabMode.SEARCHING in self._grabModes and self._isGrab(nbFingers):
-            self._historicPositions.append(hand.palm_position - self._handOrigin)
+        if GrabMode.SEARCHING in self._grabModes and self._isGrab(fingers):
+            if self._handOrigin is not None:
+                self._historicPositions.append(hand.palm_position - self._handOrigin)
 
             # When we have nbFramesAnalyzed positions in the list
             if len(self._historicPositions) == self.nbFramesAnalyzed:
@@ -78,9 +79,7 @@ class GrabListener(Leap.Listener):
     def sendNewPosition(self, positionFromHand):
         send_long_command('object_move', {'tx': positionFromHand.z, 'ty': positionFromHand.x, 'tz': positionFromHand.y}, filters={'tx': 'float', 'ty': 'float', 'tz': 'float'})
         time.sleep(0.02)
-        print('Moving object to {}'.format(positionFromHand))
-        # TODO send move object command
-
+ 
 class ScaleListener(Leap.Listener):
     """
     The scale gesture is detected when two hands are initially closed (no fingers visible).
