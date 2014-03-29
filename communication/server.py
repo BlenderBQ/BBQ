@@ -29,6 +29,7 @@ class CommandServer(object):
         with self._lock:
             data['__cmd__'] = name
             json.dump(data, self.sockfile)
+            self.sockfile.write(json.dumps(data) + '\n')
             self.sockfile.flush()
 
 server_socket = CommandServer()
