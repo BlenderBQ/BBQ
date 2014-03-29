@@ -1,0 +1,161 @@
+Language model created by QuickLM on Sat Mar 29 08:47:30 EDT 2014
+Copyright (c) 1996-2010 Carnegie Mellon University and Alexander I. Rudnicky
+
+The model is in standard ARPA format, designed by Doug Paul while he was at MITRE.
+
+The code that was used to produce this language model is available in Open Source.
+Please visit http://www.speech.cs.cmu.edu/tools/ for more information
+
+The (fixed) discount mass is 0.5. The backoffs are computed using the ratio method.
+This model based on a corpus of 32 sentences and 36 words
+
+\data\
+ngram 1=36
+ngram 2=66
+ngram 3=36
+
+\1-grams:
+-0.7959 </s> -0.3010
+-0.7959 <s> -0.2253
+-2.3010 BOTTOM -0.2253
+-2.3010 CENTER -0.2253
+-2.0000 CHANGE -0.2945
+-2.3010 EIGHT -0.2253
+-2.3010 EIGHTEEN -0.2253
+-2.3010 ELEVEN -0.2253
+-2.3010 FIFTEEN -0.2253
+-2.3010 FIVE -0.2253
+-2.3010 FOUR -0.2253
+-2.3010 FOURTEEN -0.2253
+-2.3010 LAYER -0.2253
+-2.3010 LEFT -0.2253
+-2.0000 MODE -0.2253
+-2.3010 NINE -0.2253
+-2.3010 NINETEEN -0.2253
+-2.3010 OBJECT -0.2253
+-2.3010 ONE -0.2253
+-2.3010 PAINT -0.2253
+-2.3010 RESET -0.2989
+-2.3010 RIGHT -0.2253
+-2.3010 SCULPT -0.2253
+-2.3010 SEVEN -0.2253
+-2.3010 SEVENTEEN -0.2253
+-2.3010 SIX -0.2253
+-2.3010 SIXTEEN -0.2253
+-2.3010 SWITCH -0.2967
+-2.3010 TEN -0.2253
+-2.3010 THIRTEEN -0.2253
+-2.3010 THREE -0.2253
+-2.3010 TOP -0.2253
+-2.3010 TWELVE -0.2253
+-2.3010 TWENTY -0.2253
+-2.3010 TWO -0.2253
+-2.3010 VIEW -0.2253
+
+\2-grams:
+-1.8062 <s> BOTTOM 0.0000
+-1.8062 <s> CENTER 0.0000
+-1.5051 <s> CHANGE 0.0000
+-1.8062 <s> EIGHT 0.0000
+-1.8062 <s> EIGHTEEN 0.0000
+-1.8062 <s> ELEVEN 0.0000
+-1.8062 <s> FIFTEEN 0.0000
+-1.8062 <s> FIVE 0.0000
+-1.8062 <s> FOUR 0.0000
+-1.8062 <s> FOURTEEN 0.0000
+-1.8062 <s> LEFT 0.0000
+-1.8062 <s> NINE 0.0000
+-1.8062 <s> NINETEEN 0.0000
+-1.8062 <s> OBJECT 0.0000
+-1.8062 <s> ONE 0.0000
+-1.8062 <s> PAINT 0.0000
+-1.8062 <s> RESET 0.0000
+-1.8062 <s> RIGHT 0.0000
+-1.8062 <s> SCULPT 0.0000
+-1.8062 <s> SEVEN 0.0000
+-1.8062 <s> SEVENTEEN 0.0000
+-1.8062 <s> SIX 0.0000
+-1.8062 <s> SIXTEEN 0.0000
+-1.8062 <s> SWITCH 0.0000
+-1.8062 <s> TEN 0.0000
+-1.8062 <s> THIRTEEN 0.0000
+-1.8062 <s> THREE 0.0000
+-1.8062 <s> TOP 0.0000
+-1.8062 <s> TWELVE 0.0000
+-1.8062 <s> TWENTY 0.0000
+-1.8062 <s> TWO 0.0000
+-0.3010 BOTTOM </s> -0.3010
+-0.3010 CENTER </s> -0.3010
+-0.6021 CHANGE LAYER 0.0000
+-0.6021 CHANGE MODE 0.0000
+-0.3010 EIGHT </s> -0.3010
+-0.3010 EIGHTEEN </s> -0.3010
+-0.3010 ELEVEN </s> -0.3010
+-0.3010 FIFTEEN </s> -0.3010
+-0.3010 FIVE </s> -0.3010
+-0.3010 FOUR </s> -0.3010
+-0.3010 FOURTEEN </s> -0.3010
+-0.3010 LAYER </s> -0.3010
+-0.3010 LEFT </s> -0.3010
+-0.3010 MODE </s> -0.3010
+-0.3010 NINE </s> -0.3010
+-0.3010 NINETEEN </s> -0.3010
+-0.3010 OBJECT </s> -0.3010
+-0.3010 ONE </s> -0.3010
+-0.3010 PAINT </s> -0.3010
+-0.3010 RESET VIEW 0.0000
+-0.3010 RIGHT </s> -0.3010
+-0.3010 SCULPT </s> -0.3010
+-0.3010 SEVEN </s> -0.3010
+-0.3010 SEVENTEEN </s> -0.3010
+-0.3010 SIX </s> -0.3010
+-0.3010 SIXTEEN </s> -0.3010
+-0.3010 SWITCH MODE 0.0000
+-0.3010 TEN </s> -0.3010
+-0.3010 THIRTEEN </s> -0.3010
+-0.3010 THREE </s> -0.3010
+-0.3010 TOP </s> -0.3010
+-0.3010 TWELVE </s> -0.3010
+-0.3010 TWENTY </s> -0.3010
+-0.3010 TWO </s> -0.3010
+-0.3010 VIEW </s> -0.3010
+
+\3-grams:
+-0.3010 <s> BOTTOM </s>
+-0.3010 <s> CENTER </s>
+-0.6021 <s> CHANGE LAYER
+-0.6021 <s> CHANGE MODE
+-0.3010 <s> EIGHT </s>
+-0.3010 <s> EIGHTEEN </s>
+-0.3010 <s> ELEVEN </s>
+-0.3010 <s> FIFTEEN </s>
+-0.3010 <s> FIVE </s>
+-0.3010 <s> FOUR </s>
+-0.3010 <s> FOURTEEN </s>
+-0.3010 <s> LEFT </s>
+-0.3010 <s> NINE </s>
+-0.3010 <s> NINETEEN </s>
+-0.3010 <s> OBJECT </s>
+-0.3010 <s> ONE </s>
+-0.3010 <s> PAINT </s>
+-0.3010 <s> RESET VIEW
+-0.3010 <s> RIGHT </s>
+-0.3010 <s> SCULPT </s>
+-0.3010 <s> SEVEN </s>
+-0.3010 <s> SEVENTEEN </s>
+-0.3010 <s> SIX </s>
+-0.3010 <s> SIXTEEN </s>
+-0.3010 <s> SWITCH MODE
+-0.3010 <s> TEN </s>
+-0.3010 <s> THIRTEEN </s>
+-0.3010 <s> THREE </s>
+-0.3010 <s> TOP </s>
+-0.3010 <s> TWELVE </s>
+-0.3010 <s> TWENTY </s>
+-0.3010 <s> TWO </s>
+-0.3010 CHANGE LAYER </s>
+-0.3010 CHANGE MODE </s>
+-0.3010 RESET VIEW </s>
+-0.3010 SWITCH MODE </s>
+
+\end\
