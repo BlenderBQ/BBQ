@@ -31,6 +31,9 @@ def object_scale(sx, sy, sz):
     for o in bpy.context.selected_objects:
         o.scale = (sx, sy, sz)
 
+def object_center():
+    object_move(0, 0, 0)
+
 # class TranslationOperator:
 #     @classmethod
 #     def poll(cls, context):
