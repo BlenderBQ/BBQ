@@ -1,4 +1,6 @@
 import bpy
+import socket
+import json
 
 def view_numpad(view):
     if bpy.context.area.type == 'VIEW_3D':
@@ -34,29 +36,25 @@ def object_scale(sx, sy, sz):
 def object_center():
     object_move(0, 0, 0)
 
-# class TranslationOperator:
-#     @classmethod
-#     def poll(cls, context):
-#         return context.selected_objects != []
-#
-#     def modal(self, context, event):
-#         if event.type == 'ESC':
-#             return {'CANCELLED'}
-#         return {'RUNNING_MODAL'}
-#
-#     def invoke(self, context, event):
-#         self.x_init = event.mouse_x
-#         self.y_init = event.mouse_y
-#         return {'RUNNING_MODAL'}
+def read_command(transport):
+    data = json.loads(transport.readline())
+    return None, None
 
 class BBQOperator(bpy.types.Operator):
     bl_idname = "object.bbq"
     bl_label = "BBQ Operator"
 
+    # TODO use Blender's Properties
+    # sock_addr = bpy.props.StringProperty(name="Server address")
+    sock_addr = '/tmp/bbq'
+
     def __init__(self):
         print("Start")
+        self.transport = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        self.transport.setblocking(False)
 
     def __del__(self):
+        self.transport.close()
         print("End")
 
     @classmethod
@@ -64,23 +62,36 @@ class BBQOperator(bpy.types.Operator):
         return context.area.type == 'VIEW_3D' # Only enable in 3d view
 
     def execute(self, context):
-        pass
+        return {'RUNNING_MODAL'}
 
     def modal(self, context, event):
+        try:
+            cmd, args = read_command(self.transport)
+        except IOError:
+            pass
+        else:
+            # Do something
         # object_move(event.mouse_x / 100, event.mouse_y / 100, 0)
         # object_rotate(event.mouse_x / 100, event.mouse_y / 100, 0)
-        object_scale(event.mouse_x / 1000, event.mouse_y / 1000, 0)
-        if event.type == 'LEFTMOUSE':
-            view_top()
-        elif event.type == 'RIGHTMOUSE':
-            view_left()
-        elif event.type == 'ESC':
+        # object_scale(event.mouse_x / 1000, event.mouse_y / 1000, 0)
+        # if event.type == 'LEFTMOUSE':
+        #     view_top()
+        # if event.type == 'RIGHTMOUSE':
+        #     view_left()
+        if event.type == 'ESC':
             return {'CANCELLED'}
 
         return {'RUNNING_MODAL'}
 
     def invoke(self, context, event):
-        print(context.window_manager.modal_handler_add(self))
+        try:
+            self.transport.connect(self.sock_addr)
+            self.transport = self.transport.makefile()
+        except IOError:
+            return {'CANCELLED'}
+
+        context.window_manager.modal_handler_add(self)
         return {'RUNNING_MODAL'}
+        # return context.window_manager.invoke_props_dialog(self)
 
 bpy.utils.register_class(BBQOperator)
