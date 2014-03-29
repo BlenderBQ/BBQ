@@ -3,6 +3,9 @@ import socket
 import json
 import logging
 
+def blendPos(dim):
+    return dim / 1000.0
+
 def read_command(transport):
     try:
         line = transport.readline()
@@ -35,6 +38,7 @@ class BBQOperator(bpy.types.Operator):
         self.transport = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         self.transport.setblocking(False)
         self.sockfile = None
+        self.move_origin = 0, 0, 0
         _commands = [
             self.mode_sculpt,
             self.mode_object,
@@ -44,6 +48,7 @@ class BBQOperator(bpy.types.Operator):
             self.view_bottom,
             self.view_left,
             self.view_right,
+            self.object_move_origin,
             self.object_move,
             self.object_rotate,
             self.object_scale,
@@ -131,11 +136,15 @@ class BBQOperator(bpy.types.Operator):
 
     def object_move_origin(self, **kwargs):
         x, y, z = kwargs['x'], kwargs['y'], kwargs['z']
+        self.move_origin = x, y, z
 
     def object_move(self, **kwargs):
         tx, ty, tz = kwargs['tx'], kwargs['ty'], kwargs['tz']
+        x, y, z = self.move_origin
+        dx, dy, dz = tx - x, ty - y, tz - z
+        dx, dy, dz = map(blendPos, [dx, dy, dz])
         for o in bpy.context.selected_objects:
-            o.location = (tx, ty, tz)
+            o.location = (dx, dy, dz)
 
     def object_rotate(self, **kwargs):
         ax, ay, az = kwargs['ax'], kwargs['ay'], kwargs['az']
