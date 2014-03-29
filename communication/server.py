@@ -7,7 +7,7 @@ socket_path = 'server.sock'
 
 class CommandServer(object):
     def __init__(self):
-        self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
+        self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         self._lock = threading.Lock()
 
     def __enter__(self):

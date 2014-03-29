@@ -1,6 +1,7 @@
 import bpy
 import socket
 import json
+import logging
 
 def view_numpad(view):
     if bpy.context.area.type == 'VIEW_3D':
@@ -39,13 +40,15 @@ def object_center():
 def read_command(transport):
     try:
         data = json.loads(transport.readline())
-    except ValueError:
+    except ValueError as e:
+        logging.exception(e)
         raise IOError()
 
     try:
         cmd = data['__cmd__']
         del data['__cmd__']
-    except KeyError:
+    except KeyError as e:
+        logging.exception(e)
         raise IOError()
 
     return cmd, data
@@ -81,8 +84,8 @@ class BBQOperator(bpy.types.Operator):
     def modal(self, context, event):
         try:
             cmd, args = read_command(self.transport)
-        except IOError:
-            pass
+        except IOError as e:
+            logging.exception(e)
         else:
             # Do something
             print(cmd, args)
@@ -102,7 +105,8 @@ class BBQOperator(bpy.types.Operator):
         try:
             self.transport.connect(self.sock_path)
             self.sockfile = self.transport.makefile()
-        except IOError:
+        except IOError as e:
+            logging.exception(e)
             return {'CANCELLED'}
 
         context.window_manager.modal_handler_add(self)
