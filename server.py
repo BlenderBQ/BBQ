@@ -8,7 +8,7 @@ from controllers import (set_current_controller, disable_current_controller,
         SculptListener, GrabListener, ScaleListener)
 from communication import clients
 from communication import send_command
-if os.name != 'mac'
+if os.name != 'mac':
     from voice import VoiceRecognition
 
 if __name__ == '__main__':
@@ -17,11 +17,12 @@ if __name__ == '__main__':
     sock.bind(socket_path)
     sock.listen(0)
 
-    if os.name != 'mac'
+    if os.name != 'mac':
         vr = VoiceRecognition()
         vr.start()
 
-    set_current_controller([GrabListener, ScaleListener])
+    # default mode
+    set_current_controller('object')
 
     print 'Started: Ctrl-C to kill'
     try:

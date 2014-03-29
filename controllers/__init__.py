@@ -23,8 +23,12 @@ def disable_current_controller():
 
 def set_current_controller(listener_clss):
     """
-    Set the current controller (mode), taking a list of listener classes.
+    Set the current controller (mode), taking a list of listener classes, or
+    the controller's id.
     """
+    if isinstance(listener_clss, (str, unicode)):
+        assert listener_clss in basic_controllers
+        listener_clss = basic_controllers[listener_clss]
     global _current_controller
     disable_current_controller()
     _current_controller = []
@@ -33,11 +37,17 @@ def set_current_controller(listener_clss):
         _current_controller.append(lstn)
         leap_controller.add_listener(lstn)
 
+basic_controllers = {
+        'object': [GrabListener],
+        'sculpt': [FingersListener],
+        'pottery': [PotteryListener, CalmGestureListener],
+        }
+
 if __name__ == '__main__':
     set_current_controller([SculptListener, PotteryListener, GrabListener, ScaleListener, CalmGestureListener, FingersListener])
 
     # Keep this process running until Enter is pressed
-    print "Press Enter to quit..."
+    print 'Press Enter to quit...'
     sys.stdin.readline()
 
     # Remove the sample listener when done

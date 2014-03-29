@@ -9,6 +9,13 @@ def view_from(direction):
     print 'viewing from:', direction
     send_command('set_view', { 'view': direction })
 
+_mode_mapping = {
+        #'paint': ,
+        'sculpt': 'sculpt',
+        'pottery': 'pottery',
+        'object': 'object',
+        'default': 'object',
+        }
 def enter_mode(mode):
     print 'entering mode:', mode
     send_command('set_mode', { 'mode': mode })
@@ -21,6 +28,7 @@ _cmd_mapping = {
             'right': partial(view_from, 'right'),
             'paint': partial(enter_mode, 'paint'),
             'sculpt': partial(enter_mode, 'sculpt'),
+            'pottery': partial(enter_mode, 'pottery'),
             'object': partial(enter_mode, 'object'),
             'drop': partial(enter_mode, 'default'),
             }
