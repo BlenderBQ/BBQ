@@ -4,13 +4,15 @@ sys.path.insert(0, os.path.join(this_dir, '..', 'lib'))
 import Leap
 from sculpt import SculptListener, GrabListener
 
-_leap_controller = Leap.Controller()
+# global leap controller
+leap_controller = Leap.Controller()
+
 _current_controller = []
 
 def disable_current_controller():
     global _current_controller
     for lstn in _current_controller:
-        _leap_controller.remove_listener(lstn)
+        leap_controller.remove_listener(lstn)
 
 def set_current_controller(listener_clss):
     """
@@ -22,9 +24,9 @@ def set_current_controller(listener_clss):
     for lstn_cls in listener_clss:
         lstn = lstn_cls()
         _current_controller.append(lstn)
-        _leap_controller.add_listener(lstn)
+        leap_controller.add_listener(lstn)
 
-def main():
+if __name__ == '__main__':
     set_current_controller([SculptListener, GrabListener])
 
     # Keep this process running until Enter is pressed
@@ -33,6 +35,3 @@ def main():
 
     # Remove the sample listener when done
     disable_current_controller()
-
-if __name__ == '__main__':
-    main()
