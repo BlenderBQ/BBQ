@@ -1,3 +1,7 @@
+# Leap API
+Leap.py
+lib/**
+
 *.py[cod]
 
 # C extensions
