@@ -1,6 +1,7 @@
 from communication import send_command, send_long_command
 import Leap
 import time
+from leaputils import *
 
 class GrabMode:
     """
@@ -98,7 +99,7 @@ class ScaleListener(Leap.Listener):
         self._initialFactor = 0
 
         self.nbFramesAnalyzed = nbFramesAnalyzed
-        self.threshold = threshold 
+        self.threshold = threshold
 
     def on_frame(self, controller):
         # Get the most recent frame
@@ -139,10 +140,16 @@ class ScaleListener(Leap.Listener):
             if abs(variation) >= self.threshold:
                 self.startScaling(mag)
 
+            # Limit history length to nbFramesAnalyzed
+            n = len(self._history)
+            if n > self.nbFramesAnalyzed:
+                n -= self.nbFramesAnalyzed
+                self._history = self._history[n:]
+
         # Send the scaling command
         else:
             # Scale back the magnitude between 0 and 1 (make smaller) or > 1 (make bigger)
-            self.sendNewScalingFactor(mag / self._initialFactor) 
+            self.sendNewScalingFactor(mag / self._initialFactor)
 
     def startScaling(self, currentMagnitude):
         self._initialFactor = currentMagnitude
@@ -151,7 +158,7 @@ class ScaleListener(Leap.Listener):
         del self._history[:]
 
         send_command('object_scale_origin', {})
-        print('Starting to scale object')  
+        print('Starting to scale object')
 
     def sendNewScalingFactor(self, factor):
         send_long_command('object_scale', {
@@ -214,3 +221,34 @@ class CalmGestureListener(Leap.Listener):
         del self._history[:]
         send_command('set_continuous_rotation', { 'speed': 0 })
         print('Setting rotation speed to 0')
+
+class FingersListener(Leap.Listener):
+    """
+    This gesture is intended for sculpt mode.
+    Each finger could potentially send "pressure" commands.
+    """
+    def __init__(self):
+        Leap.Listener.__init__(self)
+
+    def on_frame(self, controller):
+        # Get the most recent frame
+        frame = controller.frame()
+
+        # Need at least one hand
+        if not frame.hands:
+            return
+
+        for hand in frame.hands:
+            for finger in hand.fingers:
+                # TODO: only activate if no other gesture is ongoing
+                self.activateGesture(finger.stabilized_tip_position, finger.direction)
+
+    def activateGesture(self, tip, direction):
+        # TODO: rescale coordinates, center them at user-confortable origin
+        tip = rescale_position(tip)
+
+        send_command('sculp_touch', {
+            'x': tip.x, 'y': tip.y, 'z': tip.z,
+            'vx': direction.x, 'vy': direction.y, 'vz': direction.z
+        })
+        print('Sending sculpt command pointing at ({}, {}, {})'.format(tip.x, tip.y, tip.z))
