@@ -1,0 +1,87 @@
+Language model created by QuickLM on Sat Mar 29 12:43:20 EDT 2014
+Copyright (c) 1996-2010 Carnegie Mellon University and Alexander I. Rudnicky
+
+The model is in standard ARPA format, designed by Doug Paul while he was at MITRE.
+
+The code that was used to produce this language model is available in Open Source.
+Please visit http://www.speech.cs.cmu.edu/tools/ for more information
+
+The (fixed) discount mass is 0.5. The backoffs are computed using the ratio method.
+This model based on a corpus of 10 sentences and 17 words
+
+\data\
+ngram 1=17
+ngram 2=26
+ngram 3=21
+
+\1-grams:
+-0.9445 </s> -0.3010
+-0.9445 <s> -0.2430
+-1.9445 ABOVE -0.2486
+-1.9445 BELOW -0.2486
+-1.9445 BLENDER -0.2486
+-1.9445 CENTER -0.2756
+-1.3424 FROM -0.2808
+-1.9445 HANDS -0.2961
+-1.9445 LEFT -0.2486
+-1.4674 MODE -0.2486
+-1.9445 OBJECT -0.2860
+-1.9445 OFF -0.2486
+-1.9445 OKAY -0.2961
+-1.9445 PAINT -0.2860
+-1.9445 RIGHT -0.2486
+-1.9445 SCULPT -0.2860
+-1.2455 VIEW -0.2258
+
+\2-grams:
+-1.3010 <s> CENTER 0.0000
+-1.3010 <s> HANDS 0.0000
+-1.3010 <s> OBJECT 0.0000
+-1.3010 <s> OKAY 0.0000
+-1.3010 <s> PAINT 0.0000
+-1.3010 <s> SCULPT 0.0000
+-0.6990 <s> VIEW -0.0792
+-0.3010 ABOVE </s> -0.3010
+-0.3010 BELOW </s> -0.3010
+-0.3010 BLENDER </s> -0.3010
+-0.3010 CENTER VIEW -0.2553
+-0.9031 FROM ABOVE 0.0000
+-0.9031 FROM BELOW 0.0000
+-0.9031 FROM LEFT 0.0000
+-0.9031 FROM RIGHT 0.0000
+-0.3010 HANDS OFF 0.0000
+-0.3010 LEFT </s> -0.3010
+-0.3010 MODE </s> -0.3010
+-0.3010 OBJECT MODE 0.0000
+-0.3010 OFF </s> -0.3010
+-0.3010 OKAY BLENDER 0.0000
+-0.3010 PAINT MODE 0.0000
+-0.3010 RIGHT </s> -0.3010
+-0.3010 SCULPT MODE 0.0000
+-1.0000 VIEW </s> -0.3010
+-0.3979 VIEW FROM 0.0000
+
+\3-grams:
+-0.3010 <s> CENTER VIEW
+-0.3010 <s> HANDS OFF
+-0.3010 <s> OBJECT MODE
+-0.3010 <s> OKAY BLENDER
+-0.3010 <s> PAINT MODE
+-0.3010 <s> SCULPT MODE
+-0.3010 <s> VIEW FROM
+-0.3010 CENTER VIEW </s>
+-0.3010 FROM ABOVE </s>
+-0.3010 FROM BELOW </s>
+-0.3010 FROM LEFT </s>
+-0.3010 FROM RIGHT </s>
+-0.3010 HANDS OFF </s>
+-0.3010 OBJECT MODE </s>
+-0.3010 OKAY BLENDER </s>
+-0.3010 PAINT MODE </s>
+-0.3010 SCULPT MODE </s>
+-0.9031 VIEW FROM ABOVE
+-0.9031 VIEW FROM BELOW
+-0.9031 VIEW FROM LEFT
+-0.9031 VIEW FROM RIGHT
+
+\end\

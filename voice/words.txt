@@ -1,0 +1,12 @@
+center view
+view from above
+view from below
+view from left
+view from right
+
+paint mode
+sculpt mode
+object mode
+
+okay blender
+hands off
