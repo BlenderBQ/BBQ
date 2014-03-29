@@ -3,11 +3,15 @@ from communication import send_command
 
 def center_object():
     print 'centering object'
-    send_command('center_object')
+    send_command('object_center')
 
 def view_from(direction):
     print 'viewing from:', direction
-    send_command('set_view', { 'view': direction })
+    if direction == 'over': direction = 'top'
+    elif direction == 'under': direction = 'bottom'
+    view_command = 'view_%s' % direction
+    print view_command
+    send_command(view_command)
 
 _mode_mapping = {
         #'paint': ,

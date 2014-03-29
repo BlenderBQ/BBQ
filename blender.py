@@ -197,6 +197,7 @@ class BBQOperator(bpy.types.Operator):
             o.scale = (dx, dy, dz)
 
     def object_center(self):
-        object_move(0, 0, 0)
+        # TODO finir
+        self.object_move(tx=0, ty=0, tz=0)
 
 bpy.utils.register_class(BBQOperator)
