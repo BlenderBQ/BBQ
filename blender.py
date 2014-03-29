@@ -53,6 +53,7 @@ class BBQOperator(bpy.types.Operator):
             self.object_move_origin,
             self.object_move,
             self.object_rotate,
+            self.object_scale_origin,
             self.object_scale,
             self.object_center
         ]
@@ -79,6 +80,7 @@ class BBQOperator(bpy.types.Operator):
             return {'FINISHED'}
 
         if event.type == 'TIMER':
+            self.my_little_swinging_vase()
             try:
                 cmd = read_command(self.sockfile)
             except IOError as e:
@@ -106,8 +108,11 @@ class BBQOperator(bpy.types.Operator):
         return {'RUNNING_MODAL'}
         # return context.window_manager.invoke_props_dialog(self)
 
-    def my_little_swinging_pot(self):
-        pass
+    def my_little_swinging_vase(self):
+        for o in bpy.context.selected_objects:
+            angle = o.rotation_euler.copy()
+            angle.z += 0.02
+            o.rotation_euler = angle
 
     def sculpt_touch(self, **kwargs):
         x, y, z = kwargs['x'], kwargs['y'], kwargs['z']
