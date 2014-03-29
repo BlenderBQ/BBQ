@@ -4,6 +4,8 @@ import socket
 import threading
 import logging
 
+from filters import Filter, CompositeFilter
+
 # connection sockets for clients
 clients = []
 
@@ -43,8 +45,8 @@ def send_long_command(name, data, filters=None):
         assert arg in data, "Comment t'es trop nul ! (t'as mis un filtre sur un truc qui existe pas)"
         _filters.setdefault(name, {})
         if filter_key not in _filters[name]:
-            _filters[name] = _filter_mapping[filter_key]()
-        new_value, interesting = _filters[name].apply(data[arg])
+            _filters[name][arg] = _filter_mapping[filter_key]()
+        new_value, interesting = _filters[name][arg].apply(data[arg])
         if not interesting:
             continue
         data[arg] = new_value

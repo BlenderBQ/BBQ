@@ -3,6 +3,7 @@ this_dir = os.path.dirname(os.path.realpath(__name__))
 sys.path.insert(0, os.path.join(this_dir, '..', 'lib'))
 from communication import send_command, send_long_command
 import Leap
+import time
 
 class GrabMode:
     """
@@ -55,7 +56,7 @@ class GrabListener(Leap.Listener):
                     self._grabModes.remove(GrabMode.SEARCHING)
                     self._grabModes.append(GrabMode.MOVE)
                     self._handOrigin = hand.palm_position
-                    send_command('object_move_origin', {'x': self._handOrigin.x, 'y': self._handOrigin.y, 'z': self._handOrigin.z})
+                    send_command('object_move_origin', {'x': self._handOrigin.y, 'y': self._handOrigin.z, 'z': self._handOrigin.x})
 
                     for j in range(len(self._historicPositions) - 1):
                         self.sendNewPosition(self._historicPositions[j] - self._handOrigin)
@@ -80,6 +81,7 @@ class GrabListener(Leap.Listener):
         return self._readyToGrab and nbFingers == 0
 
     def sendNewPosition(self, positionFromHand):
-        send_long_command('object_move_origin', {'tx': positionFromHand.x, 'ty': positionFromHand.y, 'tz': positionFromHand.z}, filters={'tx': 'float', 'ty': 'float', 'tz': 'float'})
+        send_long_command('object_move', {'tx': positionFromHand.y, 'ty': positionFromHand.z, 'tz': positionFromHand.x}, filters={'tx': 'float', 'ty': 'float', 'tz': 'float'})
+        time.sleep(0.02)
         print('Moving object to {}'.format(positionFromHand))
         # TODO send move object command
