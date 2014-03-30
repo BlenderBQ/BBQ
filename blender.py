@@ -221,6 +221,7 @@ class BBQOperator(bpy.types.Operator):
         dz = zmax - zmin
 
         def bar(p, d, t, m):
+            print('@@@@', p, d, t, m)
             return (p + 1) / 2.0 * d * (1 + t * 2) + m - d * t
 
         # TODO x est toujours constant après transfo. Jeune homme allez i
