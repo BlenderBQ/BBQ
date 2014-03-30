@@ -1,6 +1,8 @@
 import bpy
+import bgl
 import socket
 import json
+import math
 import logging
 import mathutils
 
@@ -93,6 +95,7 @@ class BBQOperator(bpy.types.Operator):
     def modal(self, context, event):
         if event.type == 'ESC':
             context.window_manager.event_timer_remove(self._timer)
+            context.space_data.draw_handler_remove(self._handle, 'WINDOW')
             return {'FINISHED'}
 
         if self.moving:
@@ -116,12 +119,19 @@ class BBQOperator(bpy.types.Operator):
                     if func in self.commands:
                         self.commands[func](**kwargs)
 
+        # TODO remove
+        self.x = event.mouse_x
+        self.y = event.mouse_y
+
         return {'RUNNING_MODAL'}
 
     def invoke(self, context, event):
         try:
+            self.x, self.y, self.z = 0, 0, 0
             self.transport.connect(self.sock_path)
             self.sockfile = self.transport.makefile()
+            self._handle = context.space_data.draw_handler_add(self.draw_gl,
+                    (self, context), 'WINDOW', 'POST_PIXEL')
         except IOError as e:
             logging.exception(e)
             return {'CANCELLED'}
@@ -131,6 +141,22 @@ class BBQOperator(bpy.types.Operator):
         context.window_manager.modal_handler_add(self)
         return {'RUNNING_MODAL'}
         # return context.window_manager.invoke_props_dialog(self)
+
+    def draw_gl(self, op, context):
+        bgl.glColor3f(0, 0.5, 0.5)
+
+        # position, radius
+        radius = 15. # FIXME magic number
+        nb_iters = 360
+
+        bgl.glPushMatrix()
+        bgl.glTranslatef(self.x, self.y, self.z)
+        bgl.glBegin(bgl.GL_LINE_LOOP)
+        for i in range(nb_iters):
+            angle = math.radians(i)
+            bgl.glVertex2f(math.cos(angle)*radius, math.sin(angle)*radius);
+        bgl.glPopMatrix()
+        bgl.glEnd()
 
     def my_little_swinging_vase(self, **kwargs):
         for o in bpy.context.selected_objects:
@@ -170,6 +196,29 @@ class BBQOperator(bpy.types.Operator):
         p2.time = 1.0
 
         bpy.ops.sculpt.brush_stroke(stroke=[p1, p2])
+
+    def foo(self, x, y, z):
+        bbox = bpy.context.selected_objects[0].bound_box
+        xmin = min(pos[0] for pos in bbox if pos[0] != -1)
+        ymin = min(pos[1] for pos in bbox if pos[1] != -1)
+        zmin = min(pos[2] for pos in bbox if pos[2] != -1)
+        xmax = max(pos[0] for pos in bbox if pos[0] != -1)
+        ymax = max(pos[1] for pos in bbox if pos[1] != -1)
+        zmax = max(pos[2] for pos in bbox if pos[2] != -1)
+
+        dx = xmax - xmin
+        dy = ymax - ymin
+        dz = zmax - zmin
+
+        def bar(p, d, t, m):
+            return (p + 1) / 2.0 * d * (1 + t * 2) + m - d * t
+
+        t = 0.1
+        x_ = bar(x, dx, t, xmin)
+        y_ = bar(y, dy, t, ymin)
+        z_ = bar(z, dz, t, zmin)
+
+        return x_, y_, z_
 
     def mode_set(self, mode):
         if bpy.context.area.type == 'VIEW_3D':
@@ -211,6 +260,7 @@ class BBQOperator(bpy.types.Operator):
         self.move_origin = x, y, z
         self.moving = True
         self.move_matrix_origin = bpy.context.area.spaces[0].region_3d.view_matrix
+        print('save', x, y, z)
 
     def object_move_end(self):
         self.moving = False
@@ -219,13 +269,15 @@ class BBQOperator(bpy.types.Operator):
     def object_move(self, **kwargs):
         tx, ty, tz = kwargs['tx'], kwargs['ty'], kwargs['tz']
         x, y, z = self.move_origin
-        dx, dy, dz = tx - x, ty - y, tz - z
+        dx, dy, dz = tx + x, ty + y, tz + z
         if self.move_lock == 'X':
             dy, dz = y, z
         if self.move_lock == 'Y':
             dx, dz = x, z
         if self.move_lock == 'Z':
             dx, dy = x, y
+        print('tr', tx, ty, tz)
+        print('pos', dx, dy, dz)
         dx, dy, dz = map(blendPos, [dx, dy, dz])
         # mat_trans = mathutils.Matrix.Translation((dx, dy, dz))
         # loc = (self.move_matrix_origin * mat_trans).decompose()[0]

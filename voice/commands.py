@@ -41,6 +41,8 @@ _cmd_mapping = {
 
 def interpret_command(cmd):
     if cmd not in _cmd_mapping:
+        if 'above' == cmd:
+            print 'AbOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOVE!!!!!!!!'
         print "T'es trop nul, ta commande elle est naze", cmd
         return
     # Whenever leaving pottery mode, stop rotation

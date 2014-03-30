@@ -38,7 +38,7 @@ def set_current_controller(listener_clss):
         leap_controller.add_listener(lstn)
 
 basic_controllers = {
-        'object': [GrabListener],
+        'object': [ScaleListener, GrabListener],
         'sculpt': [FingersListener],
         'pottery': [PotteryListener, CalmGestureListener],
         }
