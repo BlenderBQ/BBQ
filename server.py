@@ -32,7 +32,7 @@ if __name__ == '__main__':
     ])
 
     # default mode
-    set_current_controller('sculpt')
+    set_current_controller('object')
 
     print 'Started: Ctrl-C to kill'
     try:

@@ -11,7 +11,7 @@ clients = []
 
 # TODO remove this, used for debugging
 from pprint import pformat
-dont_use_network = True
+dont_use_network = False
 
 _lock = threading.Lock()
 def send_command(name, data={}):

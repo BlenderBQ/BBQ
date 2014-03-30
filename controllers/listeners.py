@@ -45,7 +45,7 @@ class GrabListener(Leap.Listener):
             send_command('object_move_origin', {'x': self._handOrigin.z, 'y': self._handOrigin.x, 'z': self._handOrigin.y})
 
             # Rotate origin
-            x, y, z = hand.palm_normal
+            x, y, z = hand.palm_normal.x, hand.palm_normal.y, hand.palm_normal.z
             yaw = math.atan2(x, y)
             r = math.sqrt(x * x + y * y)
             pitch = math.atan2(z, r)
