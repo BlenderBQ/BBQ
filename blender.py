@@ -1,6 +1,8 @@
 import bpy
+import bgl
 import socket
 import json
+import math
 import logging
 import mathutils
 
@@ -93,6 +95,7 @@ class BBQOperator(bpy.types.Operator):
     def modal(self, context, event):
         if event.type == 'ESC':
             context.window_manager.event_timer_remove(self._timer)
+            context.space_data.draw_handler_remove(self._handle, 'WINDOW')
             return {'FINISHED'}
 
         if self.moving:
@@ -116,12 +119,19 @@ class BBQOperator(bpy.types.Operator):
                     if func in self.commands:
                         self.commands[func](**kwargs)
 
+        # TODO remove
+        self.x = event.mouse_x
+        self.y = event.mouse_y
+
         return {'RUNNING_MODAL'}
 
     def invoke(self, context, event):
         try:
+            self.x, self.y, self.z = 0, 0, 0
             self.transport.connect(self.sock_path)
             self.sockfile = self.transport.makefile()
+            self._handle = context.space_data.draw_handler_add(self.draw_gl,
+                    (self, context), 'WINDOW', 'POST_PIXEL')
         except IOError as e:
             logging.exception(e)
             return {'CANCELLED'}
@@ -131,6 +141,22 @@ class BBQOperator(bpy.types.Operator):
         context.window_manager.modal_handler_add(self)
         return {'RUNNING_MODAL'}
         # return context.window_manager.invoke_props_dialog(self)
+
+    def draw_gl(self, op, context):
+        bgl.glColor3f(0, 0.5, 0.5)
+
+        # position, radius
+        radius = 15. # FIXME magic number
+        nb_iters = 360
+
+        bgl.glPushMatrix()
+        bgl.glTranslatef(self.x, self.y, self.z)
+        bgl.glBegin(bgl.GL_LINE_LOOP)
+        for i in range(nb_iters):
+            angle = math.radians(i)
+            bgl.glVertex2f(math.cos(angle)*radius, math.sin(angle)*radius);
+        bgl.glPopMatrix()
+        bgl.glEnd()
 
     def my_little_swinging_vase(self, **kwargs):
         for o in bpy.context.selected_objects:
