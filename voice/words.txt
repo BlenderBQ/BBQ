@@ -24,3 +24,5 @@ wake
 
 add
 substract
+
+noob

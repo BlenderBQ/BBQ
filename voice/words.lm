@@ -1,4 +1,4 @@
-Language model created by QuickLM on Sun Mar 30 06:11:20 EDT 2014
+Language model created by QuickLM on Sun Mar 30 07:05:27 EDT 2014
 Copyright (c) 1996-2010 Carnegie Mellon University and Alexander I. Rudnicky
 
 The model is in standard ARPA format, designed by Doug Paul while he was at MITRE.
@@ -7,60 +7,62 @@ The code that was used to produce this language model is available in Open Sourc
 Please visit http://www.speech.cs.cmu.edu/tools/ for more information
 
 The (fixed) discount mass is 0.5. The backoffs are computed using the ratio method.
-This model based on a corpus of 21 sentences and 23 words
+This model based on a corpus of 22 sentences and 24 words
 
 \data\
-ngram 1=23
-ngram 2=42
-ngram 3=21
+ngram 1=24
+ngram 2=44
+ngram 3=22
 
 \1-grams:
 -0.7782 </s> -0.3010
 -0.7782 <s> -0.2218
--2.1004 ABOVE -0.2218
--2.1004 ADD -0.2218
--2.1004 BACK -0.2218
--2.1004 BELOW -0.2218
--2.1004 CAMERA -0.2218
--2.1004 CENTER -0.2218
--2.1004 EXIT -0.2218
--2.1004 FRONT -0.2218
--2.1004 LEFT -0.2218
--2.1004 OBJECT -0.2218
--2.1004 OVER -0.2218
--2.1004 PAINT -0.2218
--2.1004 POTTERY -0.2218
--2.1004 RENDER -0.2218
--2.1004 RESET -0.2218
--2.1004 RIGHT -0.2218
--2.1004 SCULPT -0.2218
--2.1004 SLEEP -0.2218
--2.1004 SUBSTRACT -0.2218
--2.1004 UNDER -0.2218
--2.1004 WAKE -0.2218
+-2.1206 ABOVE -0.2218
+-2.1206 ADD -0.2218
+-2.1206 BACK -0.2218
+-2.1206 BELOW -0.2218
+-2.1206 CAMERA -0.2218
+-2.1206 CENTER -0.2218
+-2.1206 EXIT -0.2218
+-2.1206 FRONT -0.2218
+-2.1206 LEFT -0.2218
+-2.1206 NOOB -0.2218
+-2.1206 OBJECT -0.2218
+-2.1206 OVER -0.2218
+-2.1206 PAINT -0.2218
+-2.1206 POTTERY -0.2218
+-2.1206 RENDER -0.2218
+-2.1206 RESET -0.2218
+-2.1206 RIGHT -0.2218
+-2.1206 SCULPT -0.2218
+-2.1206 SLEEP -0.2218
+-2.1206 SUBSTRACT -0.2218
+-2.1206 UNDER -0.2218
+-2.1206 WAKE -0.2218
 
 \2-grams:
--1.6232 <s> ABOVE 0.0000
--1.6232 <s> ADD 0.0000
--1.6232 <s> BACK 0.0000
--1.6232 <s> BELOW 0.0000
--1.6232 <s> CAMERA 0.0000
--1.6232 <s> CENTER 0.0000
--1.6232 <s> EXIT 0.0000
--1.6232 <s> FRONT 0.0000
--1.6232 <s> LEFT 0.0000
--1.6232 <s> OBJECT 0.0000
--1.6232 <s> OVER 0.0000
--1.6232 <s> PAINT 0.0000
--1.6232 <s> POTTERY 0.0000
--1.6232 <s> RENDER 0.0000
--1.6232 <s> RESET 0.0000
--1.6232 <s> RIGHT 0.0000
--1.6232 <s> SCULPT 0.0000
--1.6232 <s> SLEEP 0.0000
--1.6232 <s> SUBSTRACT 0.0000
--1.6232 <s> UNDER 0.0000
--1.6232 <s> WAKE 0.0000
+-1.6435 <s> ABOVE 0.0000
+-1.6435 <s> ADD 0.0000
+-1.6435 <s> BACK 0.0000
+-1.6435 <s> BELOW 0.0000
+-1.6435 <s> CAMERA 0.0000
+-1.6435 <s> CENTER 0.0000
+-1.6435 <s> EXIT 0.0000
+-1.6435 <s> FRONT 0.0000
+-1.6435 <s> LEFT 0.0000
+-1.6435 <s> NOOB 0.0000
+-1.6435 <s> OBJECT 0.0000
+-1.6435 <s> OVER 0.0000
+-1.6435 <s> PAINT 0.0000
+-1.6435 <s> POTTERY 0.0000
+-1.6435 <s> RENDER 0.0000
+-1.6435 <s> RESET 0.0000
+-1.6435 <s> RIGHT 0.0000
+-1.6435 <s> SCULPT 0.0000
+-1.6435 <s> SLEEP 0.0000
+-1.6435 <s> SUBSTRACT 0.0000
+-1.6435 <s> UNDER 0.0000
+-1.6435 <s> WAKE 0.0000
 -0.3010 ABOVE </s> -0.3010
 -0.3010 ADD </s> -0.3010
 -0.3010 BACK </s> -0.3010
@@ -70,6 +72,7 @@ ngram 3=21
 -0.3010 EXIT </s> -0.3010
 -0.3010 FRONT </s> -0.3010
 -0.3010 LEFT </s> -0.3010
+-0.3010 NOOB </s> -0.3010
 -0.3010 OBJECT </s> -0.3010
 -0.3010 OVER </s> -0.3010
 -0.3010 PAINT </s> -0.3010
@@ -93,6 +96,7 @@ ngram 3=21
 -0.3010 <s> EXIT </s>
 -0.3010 <s> FRONT </s>
 -0.3010 <s> LEFT </s>
+-0.3010 <s> NOOB </s>
 -0.3010 <s> OBJECT </s>
 -0.3010 <s> OVER </s>
 -0.3010 <s> PAINT </s>

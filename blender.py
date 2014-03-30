@@ -46,6 +46,7 @@ class BBQOperator(bpy.types.Operator):
         self.moving = False
         self.move_lock = None
         self.scale_origin = 1, 1, 1
+        self.noob = False
 
         # rotation (pottery mode)
         self.continuous_speed = 0
@@ -83,6 +84,7 @@ class BBQOperator(bpy.types.Operator):
             self.sculpt_add,
             self.sculpt_subtract,
             self.object_reset_everything,
+            self.toggle_noob,
         ]
         self.commands = {f.__name__: f for f in _commands}
         self._timer = None
@@ -347,5 +349,12 @@ class BBQOperator(bpy.types.Operator):
 
     def render(self):
         bpy.ops.render.render()
+
+    def toggle_noob(self):
+        self.noob = not self.noob
+        if not self.noob:
+            bpy.data.scenes['Scene'].tool_settings.sculpt.radial_symmetry = (1, 1, 1)
+        else:
+            bpy.data.scenes['Scene'].tool_settings.sculpt.radial_symmetry = (1, 1, 64)
 
 bpy.utils.register_class(BBQOperator)

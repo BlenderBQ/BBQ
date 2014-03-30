@@ -39,6 +39,7 @@ _cmd_mapping = {
             'object': partial(enter_mode, 'object'),
             'add': partial(send_command, 'sculpt_add'),
             'substract': partial(send_command, 'sculpt_subtract'),
+            'noob': partial(send_command, 'toggle_noob'),
             'exit': None,
             }
 
