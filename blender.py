@@ -159,6 +159,9 @@ class BBQOperator(bpy.types.Operator):
         bgl.glPopMatrix()
         bgl.glEnd()
 
+    def set_cursor(self, x, y, z):
+        bpy.data.objects['cursor'].location = x, y, z
+
     def my_little_swinging_vase(self, **kwargs):
         for o in bpy.context.selected_objects:
             angle = o.rotation_euler.copy()
@@ -183,9 +186,9 @@ class BBQOperator(bpy.types.Operator):
         vx, vy, vz = kwargs['vx'], kwargs['vy'], kwargs['vz']
 
         dist = 0.42 # magic number
-        x2, y2, z2 = x + vx * dist, y + vy * dist, z + vz * dist
         x, y, z = self.foo(x, y, z)
-        x2, y2, z2 = self.foo(x2, y2, z2)
+        x2, y2, z2 = x + vx * dist, y + vy * dist, z + vz * dist
+        # x2, y2, z2 = self.foo(x2, y2, z2)
         self.x, self.y, self.z = x, y, z
 
         print('#####', x, y, z)
@@ -207,6 +210,7 @@ class BBQOperator(bpy.types.Operator):
                 'time': 1.0}
 
         bpy.ops.sculpt.brush_stroke(stroke=[p1, p2])
+        self.set_cursor(x, y, z)
 
     def foo(self, x, y, z):
         bbox = bpy.context.selected_objects[0].bound_box
