@@ -282,7 +282,7 @@ class BBQOperator(bpy.types.Operator):
         self.mode_set('OBJECT')
 
     def mode_texture_paint(self):
-        self.mode_set('TEXTURE_PAINT')
+        self.mode_set('VERTEX_PAINT')
 
     def mode_edit(self):
         self.mode_set('EDIT')
