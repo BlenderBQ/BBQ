@@ -24,6 +24,10 @@ def enter_mode(mode):
     print 'entering mode:', mode
     if mode not in _mode_mapping:
         print 'COMMENT T\'ES TROP NUL', mode
+    if mode == 'sculpt' or mode == 'pottery':
+        send_command('mode_sculpt')
+    else:
+        send_command('mode_object')
     set_current_controller(_mode_mapping[mode])
 
 _cmd_mapping = {
