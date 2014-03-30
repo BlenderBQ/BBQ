@@ -20,7 +20,7 @@ if not platform.mac_ver()[0]:
     from voice import VoiceRecognition
 
 def run_server():
-    print 'Started: Ctrl-C to kill'
+    print 'Started: Ctrl-C or command \'exit\' to kill.\n'
     try:
         while True:
             pipe, _ = sock.accept()
@@ -57,8 +57,8 @@ if __name__ == '__main__':
             t.start()
             try:
                 cmd = ''
-                while cmd is not 'exit':
-                    cmd = raw_input('Command ?').strip()
+                while not 'exit' == cmd:
+                    cmd = raw_input('Command? ').strip()
                     if not cmd:
                         pass
                     interpret_command(cmd)
@@ -66,6 +66,7 @@ if __name__ == '__main__':
                 pass
         except Exception as e:
             print 'exception:', str(e)
+        finally:
             cleanup_server()
     else:
         run_server()
