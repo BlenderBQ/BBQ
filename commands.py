@@ -2,14 +2,6 @@ from functools import partial
 from communication import send_command
 from controllers import set_current_controller
 
-def reset_object():
-    print 'resetting object'
-    send_command('object_reset_everything')
-
-def center_object():
-    print 'centering object'
-    send_command('object_center')
-
 def view_from(direction):
     print 'viewing from:', direction
     send_command('view_%s' % direction)
@@ -18,7 +10,6 @@ _mode_mapping = {
         'sculpt': 'sculpt',
         'pottery': 'pottery',
         'object': 'object',
-        'default': 'object',
         }
 def enter_mode(mode):
     print 'entering mode:', mode
@@ -31,22 +22,24 @@ def enter_mode(mode):
     set_current_controller(_mode_mapping[mode])
 
 _cmd_mapping = {
-            'center': center_object, 'reset': reset_object,
+            'center': partial(send_command, 'object_reset_everything'),
+            'reset': partial(send_command, 'object_center'),
+            'render': partial(send_command, 'render'),
             'above': partial(view_from, 'top'), 'over': partial(view_from, 'top'),
             'below': partial(view_from, 'bottom'), 'under': partial(view_from, 'bottom'),
+            'camera': partial(view_from, 'camera'),
+            'front': partial(view_from, 'front'),
+            'back': partial(view_from, 'back'),
             'left': partial(view_from, 'left'),
             'right': partial(view_from, 'right'),
             'sculpt': partial(enter_mode, 'sculpt'),
             'pottery': partial(enter_mode, 'pottery'),
             'object': partial(enter_mode, 'object'),
-            'default': partial(enter_mode, 'default'), 'drop': partial(enter_mode, 'default'),
             'exit': None,
             }
 
 def interpret_command(cmd):
     if cmd not in _cmd_mapping:
-        if 'above' == cmd:
-            print 'AbOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOVE!!!!!!!!'
         print "T'es trop nul, ta commande elle est naze", cmd
         return
 

@@ -61,6 +61,10 @@ class BBQOperator(bpy.types.Operator):
             self.view_bottom,
             self.view_left,
             self.view_right,
+            self.view_front,
+            self.view_back,
+            self.view_camera,
+            self.render,
             self.object_move_origin,
             self.object_move,
             self.object_move_end,
@@ -119,10 +123,6 @@ class BBQOperator(bpy.types.Operator):
                     print(func, kwargs)
                     if func in self.commands:
                         self.commands[func](**kwargs)
-
-        # TODO remove
-        # self.x = event.mouse_x
-        # self.y = event.mouse_y
 
         return {'RUNNING_MODAL'}
 
@@ -270,6 +270,12 @@ class BBQOperator(bpy.types.Operator):
     def view_right(self):
         self.view_numpad('RIGHT')
 
+    def view_front(self):
+        self.view_numpad('FRONT')
+
+    def view_back(self):
+        self.view_numpad('BACK')
+
     def view_camera(self):
         self.view_numpad('CAMERA')
 
@@ -327,5 +333,8 @@ class BBQOperator(bpy.types.Operator):
         for o in bpy.context.selected_objects:
             o.location = 0, 0, 0
             o.rotation_euler = 0, 0, 0
+
+    def render(self):
+        bpy.ops.render.render()
 
 bpy.utils.register_class(BBQOperator)

@@ -44,8 +44,8 @@ class PotteryListener(Leap.Listener):
             return
 
         if swipe_gesture.direction[0] > 0:
-            print 'Rotating left'
+            #print 'Rotating left'
             send_command('do_rotation_left')
         else:
-            print 'Rotating right'
+            #print 'Rotating right'
             send_command('do_rotation_right')

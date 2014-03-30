@@ -63,16 +63,16 @@ def send_long_command(name, data, filters=None):
 
     changed = False
     for arg, filter_key in filters.iteritems():
-        assert arg in data, "Comment t'es trop nul ! (t'as mis un filtre sur un truc qui existe pas)"
         _filters.setdefault(name, {})
         cmd_filters = _filters[name]
         if arg not in cmd_filters:
-            assert filter_key in _filter_mapping, "Comment t'es trop nul ! (t'as mis un filtre qui existe pas)"
             cmd_filters[arg] = _filter_mapping[filter_key]()
         new_value, interesting = cmd_filters[arg].apply(data[arg])
         if not interesting:
             continue
+
         data[arg] = new_value
         changed = True
+
     if changed:
         return send_command(name, data)

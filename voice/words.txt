@@ -7,13 +7,15 @@ above
 below
 left
 right
+front
+back
+camera
 
 pottery
 sculpt
 object
-default
+render
 
-drop
 exit
 
 sleep
