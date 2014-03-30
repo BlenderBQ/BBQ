@@ -40,6 +40,6 @@ _cmd_mapping = {
 
 def interpret_command(cmd):
     if cmd not in _cmd_mapping:
-        print "C'est quoi ce dictionnaire de merde ???", cmd
+        print "T'es trop nul, ta commande elle est naze", cmd
         return
     _cmd_mapping[cmd]()

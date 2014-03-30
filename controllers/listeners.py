@@ -207,7 +207,7 @@ class CalmGestureListener(Leap.Listener):
     """
     The "calm down" gesture is activated when a fully opened hand is lowered.
     """
-    def __init__(self, threshold = 7, nbFramesAnalyzed = 50):
+    def __init__(self, threshold = 5, nbFramesAnalyzed = 50):
         Leap.Listener.__init__(self)
 
         self._handOrigin = Leap.Vector()
@@ -251,7 +251,7 @@ class CalmGestureListener(Leap.Listener):
 
     def activateGesture(self):
         del self._history[:]
-        send_command('set_continuous_rotation', { 'speed': 0 })
+        send_command('stop_rotation')
         print('Setting rotation speed to 0')
 
 class FingersListener(Leap.Listener):
