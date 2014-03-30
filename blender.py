@@ -63,6 +63,8 @@ class BBQOperator(bpy.types.Operator):
             self.view_right,
             self.view_front,
             self.view_back,
+            self.view_camera,
+            self.render,
             self.object_move_origin,
             self.object_move,
             self.object_move_end,
@@ -326,5 +328,8 @@ class BBQOperator(bpy.types.Operator):
         for o in bpy.context.selected_objects:
             o.location = 0, 0, 0
             o.rotation_euler = 0, 0, 0
+
+    def render(self):
+        bpy.ops.render.render()
 
 bpy.utils.register_class(BBQOperator)
