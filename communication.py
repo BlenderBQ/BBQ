@@ -34,6 +34,9 @@ def send_command(name, data={}):
         for c in clients:
             try:
                 c.send(jdata)
+            except socket.timeout as e:
+                logging.exception(e)
+                continue
             except IOError as e:
                 logging.exception(e)
                 clients.remove(c)

@@ -23,6 +23,7 @@ def run_server():
     try:
         while True:
             pipe, _ = sock.accept()
+            pipe.settimeout(0.1)
             clients.append(pipe)
     except KeyboardInterrupt:
         pass

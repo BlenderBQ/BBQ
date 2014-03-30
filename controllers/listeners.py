@@ -261,7 +261,7 @@ class FingersListener(Leap.Listener):
     This gesture is intended for sculpt mode.
     Each finger could potentially send "pressure" commands.
     """
-    def __init__(self, threshold = 1, lengthThreshold = 25, history_size = 30):
+    def __init__(self, threshold = 1, lengthThreshold = 10, history_size = 30):
         Leap.Listener.__init__(self)
         self.threshold = threshold
         self.lengthThreshold = lengthThreshold
@@ -292,6 +292,7 @@ class FingersListener(Leap.Listener):
         # TODO: rescale coordinates, center them at user-confortable origin
         tip = rescale_position(tip)
 
+        print 'sculpt_touch', tip, direction
         send_command('sculpt_touch', {
             'x': tip.x, 'y': tip.y, 'z': tip.z,
             'vx': direction.x, 'vy': direction.y, 'vz': direction.z
