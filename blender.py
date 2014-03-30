@@ -7,7 +7,6 @@ import json
 import math
 import logging
 import mathutils
-from config import server_address
 
 def blendPos(dim):
     return dim / 50.0
@@ -130,7 +129,7 @@ class BBQOperator(bpy.types.Operator):
     def invoke(self, context, event):
         try:
             self.x, self.y, self.z = 0, 0, 0
-            self.transport.connect(server_address)
+            self.transport.connect(('192.168.3.13', 1337))
             self.sockfile = self.transport.makefile()
         except IOError as e:
             logging.exception(e)
