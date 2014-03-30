@@ -58,7 +58,7 @@ class VoiceRecognition(object):
             print 'empty text'
             return
         cmd = text.lower()
-        if cmd == 'sleep':
+        if cmd in ('sleep', 'quiet',):
             print 'going to sleep'
             self.is_interpreting = False
         elif cmd == 'wake':
