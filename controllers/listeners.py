@@ -58,7 +58,6 @@ class GrabListener(Leap.Listener):
             #send_long_command('object_rotate', {'yaw': rotation[0], 'pitch': rotation[1], 'roll': rotation[2]},
                     #filters={'yaw': 'coordinate', 'pitch': 'coordinate', 'roll': 'coordinate'})
 
-            time.sleep(0.02)
 
         # Ungrab
         if is_grabbing and len(fingers) >= self.min_nb_fingers:
@@ -204,7 +203,6 @@ class ScaleListener(Leap.Listener):
             },
             filters={'sx': 'coordinate', 'sy': 'coordinate', 'sz': 'coordinate'}
         )
-        time.sleep(0.02)
         print('Scaling object of factor {}'.format(factor))
 
 class CalmGestureListener(Leap.Listener):
@@ -298,6 +296,5 @@ class FingersListener(Leap.Listener):
             'x': tip.x, 'y': tip.y, 'z': tip.z,
             'vx': direction.x, 'vy': direction.y, 'vz': direction.z
         })
-        time.sleep(0.02)
 #        print('Sending sculpt command pointing at ({}, {}, {})'.format(tip.x, tip.y, tip.z))
 

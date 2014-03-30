@@ -3,6 +3,7 @@ import json
 import socket
 import threading
 import logging
+import time
 
 from filters import Filter, CompositeFilter
 
@@ -36,6 +37,7 @@ def send_command(name, data={}):
             except IOError as e:
                 logging.exception(e)
                 clients.remove(c)
+        time.sleep(0.05)
 
 _filters = {}
 _filter_mapping = {
