@@ -1,14 +1,20 @@
 center
+reset
+
 over
 under
+above
+below
 left
 right
 
-paint
+pottery
 sculpt
 object
+default
+
+drop
+exit
 
 sleep
 wake
-
-drop

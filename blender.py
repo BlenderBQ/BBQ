@@ -73,7 +73,8 @@ class BBQOperator(bpy.types.Operator):
             self.do_rotation_right,
             self.stop_rotation,
             self.my_little_swinging_vase,
-            self.sculpt_touch
+            self.sculpt_touch,
+            self.object_reset_everything,
         ]
         self.commands = {f.__name__: f for f in _commands}
         self._timer = None
@@ -302,6 +303,10 @@ class BBQOperator(bpy.types.Operator):
             o.scale = (dx, dy, dz)
 
     def object_center(self):
+        for o in bpy.context.selected_objects:
+            o.location = 0, 0, 0
+
+    def object_reset_everything(self):
         for o in bpy.context.selected_objects:
             o.location = 0, 0, 0
             o.rotation_euler = 0, 0, 0
