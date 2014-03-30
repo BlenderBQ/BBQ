@@ -23,8 +23,8 @@ def enter_mode(mode):
     set_current_controller(_mode_mapping[mode])
 
 _cmd_mapping = {
-            'center': partial(send_command, 'object_reset_everything'),
-            'reset': partial(send_command, 'object_center'),
+            'reset': partial(send_command, 'object_reset_everything'),
+            'center': partial(send_command, 'object_center'),
             'render': partial(send_command, 'render'),
             'above': partial(view_from, 'top'), 'over': partial(view_from, 'top'),
             'below': partial(view_from, 'bottom'), 'under': partial(view_from, 'bottom'),
