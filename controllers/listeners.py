@@ -211,6 +211,7 @@ class CalmGestureListener(Leap.Listener):
     """
     The "calm down" gesture is activated when a fully opened hand is lowered.
     """
+    def __init__(self, threshold = 35, history_size = 10):
         Leap.Listener.__init__(self)
 
         self.hand_origin = Leap.Vector()
@@ -293,10 +294,58 @@ class FingersListener(Leap.Listener):
         # TODO: rescale coordinates, center them at user-confortable origin
         tip = rescale_position(tip)
 
-        #print 'sculpt_touch', tip, direction
-        send_command('sculpt_touch', {
+        send_command('finger_touch', {
             'x': tip.z, 'y': tip.x, 'z': tip.y,
             'vx': direction.z, 'vy': direction.x, 'vz': direction.y
         })
 #        print('Sending sculpt command pointing at ({}, {}, {})'.format(tip.z, tip.x, tip.y))
+
+class ColorListener(Leap.Listener):
+    """
+    This listener is intended for painting mode.
+    It can change the color according to position of the hand with all five fingers opened
+    """
+    def __init__(self, threshold = 1, lengthThreshold = 10, history_size = 30):
+        Leap.Listener.__init__(self)
+        self.threshold = threshold
+        self.lengthThreshold = lengthThreshold
+        self.history_size = history_size
+        self.history = []
+
+    def on_frame(self, controller):
+        # Get the most recent frame
+        frame = controller.frame()
+
+        # Need exactly one hand for this gesture
+        if len(frame.hands) is not 1:
+            del self.history[:]
+            return
+
+        hand = frame.hands[0]
+
+        # About five fingers must be visible
+        if len(hand.fingers) < 4:
+            del self.history[:]
+            return
+
+        self.history.append(hand.stabilized_palm_position)
+        # Limit history size
+        if len(self.history) > self.history_size:
+            self.history[:-self.history_size]
+
+        # Activate the gesture if there's enough change
+        variation = Leap.Vector()
+        for i in range(1, len(self.history)):
+            variation += self.history[i] - self.history[i-1]
+        if variation.magnitude >= self.threshold:
+            self.change_color(hand.stabilized_palm_position)
+
+    def change_color(self, position):
+        r, g, b = to_color(position)
+        r, g, b = min(1, r), min(1, g), min(1, b)
+
+        send_long_command('paint_color',
+            {'r': r, 'g': g, 'b': b},
+            filters={'r': 'coordinate', 'g': 'coordinate', 'b': 'coordinate'}
+        )
 

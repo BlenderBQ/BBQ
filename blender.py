@@ -78,15 +78,16 @@ class BBQOperator(bpy.types.Operator):
             self.do_rotation_right,
             self.stop_rotation,
             self.my_little_swinging_vase,
-            self.paint_touch,
             self.paint_color,
-            self.sculpt_touch,
+            self.finger_touch,
             self.sculpt_add,
             self.sculpt_subtract,
             self.object_reset_everything,
         ]
         self.commands = {f.__name__: f for f in _commands}
         self._timer = None
+
+        self.current_mode = 'OBJECT'
 
     def __del__(self):
         print("Ending")
@@ -179,7 +180,7 @@ class BBQOperator(bpy.types.Operator):
     def sculpt_subtract(self):
         bpy.data.brushes['SculptDraw'].direction = 'SUBTRACT'
 
-    def sculpt_touch(self, **kwargs):
+    def finger_touch(self, **kwargs):
         x, y, z = kwargs['x'], kwargs['y'], kwargs['z']
         vx, vy, vz = kwargs['vx'], kwargs['vy'], kwargs['vz']
 
@@ -189,15 +190,13 @@ class BBQOperator(bpy.types.Operator):
         # x2, y2, z2 = self.foo(x2, y2, z2)
         self.x, self.y, self.z = x, y, z
 
-        print('#####', x, y, z)
-
         p1 = { 'name': 'dummy_foo',
                 'is_start': True,
                 'location': (x, y, z),
                 'mouse': (0, 0),
                 'pressure': 1.0,
                 'pen_flip': False,
-                'time': 1.0}
+                'time': 1.0 }
 
         p2 = { 'name': 'dummy_bar',
                 'is_start': False,
@@ -205,45 +204,20 @@ class BBQOperator(bpy.types.Operator):
                 'mouse': (0, 0),
                 'pressure': 1.0,
                 'pen_flip': False,
-                'time': 1.0}
+                'time': 1.0 }
 
-        bpy.ops.sculpt.brush_stroke(stroke=[p1, p2])
+        print(self.current_mode)
+        if self.current_mode == 'SCULPT':
+            bpy.ops.sculpt.brush_stroke(stroke=[p1, p2])
+        elif self.current_mode == 'VERTEX_PAINT':
+            bpy.ops.paint.vertex_paint(stroke=[p1, p2])
+            print('Painting vertex')
+
         self.set_cursor(x, y, z)
 
     def paint_color(self, **kwargs):
         r, g, b = kwargs['r'], kwargs['g'], kwargs['b']
         bpy.data.brushes['TexDraw'].color = r, g, b
-
-    def paint_touch(self, **kwargs):
-        x, y, z = kwargs['x'], kwargs['y'], kwargs['z']
-        vx, vy, vz = kwargs['vx'], kwargs['vy'], kwargs['vz']
-
-        dist = 0.42 # magic number
-        x, y, z = self.foo(x, y, z)
-        x2, y2, z2 = x + vx * dist, y + vy * dist, z + vz * dist
-        # x2, y2, z2 = self.foo(x2, y2, z2)
-        self.x, self.y, self.z = x, y, z
-
-        print('#####', x, y, z)
-
-        p1 = { 'name': 'dummy_foo',
-                'is_start': True,
-                'location': (x, y, z),
-                'mouse': (0, 0),
-                'pressure': 1.0,
-                'pen_flip': False,
-                'time': 1.0}
-
-        p2 = { 'name': 'dummy_bar',
-                'is_start': False,
-                'location': (x2, y2, z2),
-                'mouse': (0, 0),
-                'pressure': 1.0,
-                'pen_flip': False,
-                'time': 1.0}
-
-        bpy.ops.paint.vertex_paint(stroke=[p1, p2])
-        self.set_cursor(x, y, z)
 
     def foo(self, x, y, z):
         bbox = bpy.context.selected_objects[0].bound_box
@@ -259,7 +233,6 @@ class BBQOperator(bpy.types.Operator):
         dz = zmax - zmin
 
         def bar(p, d, t, m):
-            print('@@@@', p, d, t, m)
             return (p + 1) / 2.0 * d * (1 + t * 2) + m - d * t
 
         # TODO x est toujours constant après transfo. Jeune homme allez i
@@ -274,6 +247,7 @@ class BBQOperator(bpy.types.Operator):
     def mode_set(self, mode):
         if bpy.context.area.type == 'VIEW_3D':
             bpy.ops.object.mode_set(mode=mode)
+            self.current_mode = mode
 
     def mode_sculpt(self):
         self.mode_set('SCULPT')
