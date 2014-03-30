@@ -76,5 +76,3 @@ def send_long_command(name, data, filters=None):
         changed = True
     if changed:
         return send_command(name, data)
-    else:
-        print 'Command not sent'
