@@ -211,7 +211,6 @@ class CalmGestureListener(Leap.Listener):
     """
     The "calm down" gesture is activated when a fully opened hand is lowered.
     """
-    def __init__(self, threshold = 5, history_size = 50):
         Leap.Listener.__init__(self)
 
         self.hand_origin = Leap.Vector()
@@ -249,7 +248,7 @@ class CalmGestureListener(Leap.Listener):
         # Activate the gesture if there's enough vertical change
         variation = 0
         for i in range(1, len(self.history)):
-            variation = self.history[i] - self.history[i-1]
+            variation += self.history[i] - self.history[i-1]
         if -variation >= self.threshold:
             self.activateGesture()
 
