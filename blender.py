@@ -41,7 +41,13 @@ class BBQOperator(bpy.types.Operator):
         self.sockfile = None
         self.move_origin = 0, 0, 0
         self.scale_origin = 1, 1, 1
+
+        # rotation (pottery mode)
         self.continuous_speed = 0
+        self.rotation_level = 0
+        self.max_rotation_level = 5.
+        self.rotation_inc = 0.02
+
         _commands = [
             self.mode_sculpt,
             self.mode_object,
@@ -58,6 +64,9 @@ class BBQOperator(bpy.types.Operator):
             self.object_scale,
             self.object_center,
             self.set_continuous_rotation,
+            self.do_rotation_left,
+            self.do_rotation_right,
+            self.stop_rotation,
             self.my_little_swinging_vase,
             self.sculpt_touch
         ]
@@ -118,8 +127,18 @@ class BBQOperator(bpy.types.Operator):
             angle.z += self.continuous_speed
             o.rotation_euler = angle
 
-    def set_continuous_rotation(self, **kwargs):
-        self.continuous_speed = kwargs['speed']
+    def set_continuous_rotation(self, direction):
+        self.rotation_level = max(-self.max_rotation_level, min(self.rotation_level + direction, self.max_rotation_level))
+        print('Rotation level', self.rotation_level)
+        self.continuous_speed = float(self.rotation_level) * self.rotation_inc
+
+    def do_rotation_left(self):
+        self.set_continuous_rotation(1)
+    def do_rotation_right(self):
+        self.set_continuous_rotation(-1)
+    def stop_rotation(self):
+        self.continuous_speed = 0
+        self.rotation_level = 0
 
     def sculpt_touch(self, **kwargs):
         x, y, z = kwargs['x'], kwargs['y'], kwargs['z']

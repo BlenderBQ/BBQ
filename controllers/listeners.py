@@ -230,7 +230,7 @@ class CalmGestureListener(Leap.Listener):
 
     def activateGesture(self):
         del self._history[:]
-        send_command('set_continuous_rotation', { 'speed': 0 })
+        send_command('stop_rotation')
         print('Setting rotation speed to 0')
 
 class FingersListener(Leap.Listener):
