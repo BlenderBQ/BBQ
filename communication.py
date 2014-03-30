@@ -72,7 +72,6 @@ def send_long_command(name, data, filters=None):
         new_value, interesting = cmd_filters[arg].apply(data[arg])
         if not interesting:
             continue
-        print arg, 'is interesting with value', new_value
         data[arg] = new_value
         changed = True
     if changed:
