@@ -193,7 +193,7 @@ class BBQOperator(bpy.types.Operator):
             o.location = dx, dy, dz
 
     def object_rotate(self, **kwargs):
-        ax, ay, az = kwargs['ax'], kwargs['ay'], kwargs['az']
+        ax, ay, az = -kwargs['yaw'], -kwargs['pitch'], kwargs['roll']
         for o in bpy.context.selected_objects:
             o.rotation_euler = (ax, ay, az)
 
