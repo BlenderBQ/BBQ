@@ -5,6 +5,7 @@ import json
 import math
 import logging
 import mathutils
+from config import server_address
 
 def blendPos(dim):
     return dim / 50.0
@@ -34,7 +35,6 @@ class BBQOperator(bpy.types.Operator):
 
     # TODO use Blender's Properties
     # sock_addr = bpy.props.StringProperty(name="Server address")
-    sock_path = 'server.sock'
 
     def __init__(self):
         print("Starting")
@@ -61,6 +61,10 @@ class BBQOperator(bpy.types.Operator):
             self.view_bottom,
             self.view_left,
             self.view_right,
+            self.view_front,
+            self.view_back,
+            self.view_camera,
+            self.render,
             self.object_move_origin,
             self.object_move,
             self.object_move_end,
@@ -98,7 +102,6 @@ class BBQOperator(bpy.types.Operator):
     def modal(self, context, event):
         if event.type == 'ESC':
             context.window_manager.event_timer_remove(self._timer)
-            context.space_data.draw_handler_remove(self._handle, 'WINDOW')
             return {'FINISHED'}
 
         if event.type == 'A':
@@ -127,19 +130,13 @@ class BBQOperator(bpy.types.Operator):
                     if func in self.commands:
                         self.commands[func](**kwargs)
 
-        # TODO remove
-        # self.x = event.mouse_x
-        # self.y = event.mouse_y
-
         return {'RUNNING_MODAL'}
 
     def invoke(self, context, event):
         try:
             self.x, self.y, self.z = 0, 0, 0
-            self.transport.connect(self.sock_path)
+            self.transport.connect(config.server_address)
             self.sockfile = self.transport.makefile()
-            self._handle = context.space_data.draw_handler_add(self.draw_gl,
-                    (self, context), 'WINDOW', 'POST_PIXEL')
         except IOError as e:
             logging.exception(e)
             return {'CANCELLED'}
@@ -149,22 +146,6 @@ class BBQOperator(bpy.types.Operator):
         context.window_manager.modal_handler_add(self)
         return {'RUNNING_MODAL'}
         # return context.window_manager.invoke_props_dialog(self)
-
-    def draw_gl(self, op, context):
-        bgl.glColor3f(0, 0.5, 0.5)
-
-        # position, radius
-        radius = 15. # FIXME magic number
-        nb_iters = 360
-
-        bgl.glPushMatrix()
-        bgl.glTranslatef(self.x, self.y, self.z)
-        bgl.glBegin(bgl.GL_LINE_LOOP)
-        for i in range(nb_iters):
-            angle = math.radians(i)
-            bgl.glVertex2f(math.cos(angle)*radius, math.sin(angle)*radius);
-        bgl.glPopMatrix()
-        bgl.glEnd()
 
     def set_cursor(self, x, y, z):
         bpy.data.objects['cursor'].location = x, y, z
@@ -283,6 +264,12 @@ class BBQOperator(bpy.types.Operator):
     def view_right(self):
         self.view_numpad('RIGHT')
 
+    def view_front(self):
+        self.view_numpad('FRONT')
+
+    def view_back(self):
+        self.view_numpad('BACK')
+
     def view_camera(self):
         self.view_numpad('CAMERA')
 
@@ -340,5 +327,8 @@ class BBQOperator(bpy.types.Operator):
         for o in bpy.context.selected_objects:
             o.location = 0, 0, 0
             o.rotation_euler = 0, 0, 0
+
+    def render(self):
+        bpy.ops.render.render()
 
 bpy.utils.register_class(BBQOperator)

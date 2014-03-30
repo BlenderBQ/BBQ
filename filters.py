@@ -66,4 +66,4 @@ if __name__ == '__main__':
     for i in xrange(1, 10):
         r = [random.random(), random.random(), random.random()]
         result, interesting = leFilter.apply(r)
-        print(result, interesting)
+        #print(result, interesting)
