@@ -181,6 +181,8 @@ class BBQOperator(bpy.types.Operator):
         bpy.data.brushes['SculptDraw'].direction = 'SUBTRACT'
 
     def finger_touch(self, **kwargs):
+        if self.current_mode == 'VERTEX_PAINT':
+            return
         x, y, z = kwargs['x'], kwargs['y'], kwargs['z']
         vx, vy, vz = kwargs['vx'], kwargs['vy'], kwargs['vz']
 
@@ -217,8 +219,9 @@ class BBQOperator(bpy.types.Operator):
 
     def paint_color(self, **kwargs):
         r, g, b = kwargs['r'], kwargs['g'], kwargs['b']
-        bpy.data.brushes['TexDraw'].color = r, g, b
-        bpy.data.materials['Cursor'].diffuse_color = r, g, b
+        # bpy.data.brushes['TexDraw'].color = r, g, b
+        bpy.data.materials['Cylindre'].diffuse_color = r, g, b
+        bpy.data.materials['Cursor'].diffuse_color = 1 - r, 1 - g, 1 - b
 
     def foo(self, x, y, z):
         bbox = bpy.context.selected_objects[0].bound_box
@@ -257,7 +260,7 @@ class BBQOperator(bpy.types.Operator):
         self.mode_set('OBJECT')
 
     def mode_texture_paint(self):
-        self.mode_set('VERTEX_PAINT')
+        self.mode_set('OBJECT')
 
     def mode_edit(self):
         self.mode_set('EDIT')
