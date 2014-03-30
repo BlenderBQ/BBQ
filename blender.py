@@ -40,6 +40,8 @@ class BBQOperator(bpy.types.Operator):
         self.transport.setblocking(False)
         self.sockfile = None
         self.move_origin = 0, 0, 0
+        self.moving = False
+        self.move_lock = None
         self.scale_origin = 1, 1, 1
 
         # rotation (pottery mode)
@@ -59,6 +61,7 @@ class BBQOperator(bpy.types.Operator):
             self.view_right,
             self.object_move_origin,
             self.object_move,
+            self.object_move_end,
             self.object_rotate,
             self.object_scale_origin,
             self.object_scale,
@@ -91,6 +94,14 @@ class BBQOperator(bpy.types.Operator):
         if event.type == 'ESC':
             context.window_manager.event_timer_remove(self._timer)
             return {'FINISHED'}
+
+        if self.moving:
+            if event.type == 'X':
+                self.move_lock = 'X'
+            if event.type == 'Y':
+                self.move_lock = 'Y'
+            if event.type == 'Z':
+                self.move_lock = 'Z'
 
         if event.type == 'TIMER':
             self.my_little_swinging_vase()
@@ -198,12 +209,23 @@ class BBQOperator(bpy.types.Operator):
     def object_move_origin(self, **kwargs):
         x, y, z = kwargs['x'], kwargs['y'], kwargs['z']
         self.move_origin = x, y, z
+        self.moving = True
         self.move_matrix_origin = bpy.context.area.spaces[0].region_3d.view_matrix
+
+    def object_move_end(self):
+        self.moving = False
+        self.move_lock = None
 
     def object_move(self, **kwargs):
         tx, ty, tz = kwargs['tx'], kwargs['ty'], kwargs['tz']
         x, y, z = self.move_origin
         dx, dy, dz = tx - x, ty - y, tz - z
+        if self.move_lock == 'X':
+            dy, dz = y, z
+        if self.move_lock == 'Y':
+            dx, dz = x, z
+        if self.move_lock == 'Z':
+            dx, dy = x, y
         dx, dy, dz = map(blendPos, [dx, dy, dz])
         # mat_trans = mathutils.Matrix.Translation((dx, dy, dz))
         # loc = (self.move_matrix_origin * mat_trans).decompose()[0]
@@ -212,7 +234,7 @@ class BBQOperator(bpy.types.Operator):
             o.location = dx, dy, dz
 
     def object_rotate(self, **kwargs):
-        ax, ay, az = kwargs['ax'], kwargs['ay'], kwargs['az']
+        ax, ay, az = -kwargs['yaw'], -kwargs['pitch'], kwargs['roll']
         for o in bpy.context.selected_objects:
             o.rotation_euler = (ax, ay, az)
 

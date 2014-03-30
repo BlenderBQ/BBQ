@@ -20,18 +20,20 @@ class Filter(object):
             return new_value, True
 
         # compute previous mean
-        mean = 0
+        mean = 0.
         for i in xrange(self.window_length - 1):
             index = max(0, len(self.history) - i - 1)
             mean += self.history[index]
-        previous = mean / (self.window_length - 1)
+        previous = mean / float(self.window_length - 1)
 
         self.history.append(new_value)
         if len(self.history) > self.window_length:
             self.history = self.history[-self.window_length:]
         mean = (mean + new_value) / self.window_length
 
-        value = abs(mean - previous) / previous
+        value = abs(mean - previous)
+        if previous != 0:
+            value /= previous
         interesting = (value > self.threshold)
         return mean, interesting
 
