@@ -11,7 +11,7 @@ from controllers import (set_current_controller, disable_current_controller,
         PotteryListener)
 from communication import clients, send_command
 import communication as com
-# from voice.commands import interpret_command
+from voice.commands import interpret_command
 
 # Mac not-imports
 # import platform

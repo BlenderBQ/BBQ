@@ -171,6 +171,29 @@ class BBQOperator(bpy.types.Operator):
 
         bpy.ops.sculpt.brush_stroke(stroke=[p1, p2])
 
+    def foo(self, x, y, z):
+        bbox = bpy.context.selected_objects[0].bound_box
+        xmin = min(pos[0] for pos in bbox if pos[0] != -1)
+        ymin = min(pos[1] for pos in bbox if pos[1] != -1)
+        zmin = min(pos[2] for pos in bbox if pos[2] != -1)
+        xmax = max(pos[0] for pos in bbox if pos[0] != -1)
+        ymax = max(pos[1] for pos in bbox if pos[1] != -1)
+        zmax = max(pos[2] for pos in bbox if pos[2] != -1)
+
+        dx = xmax - xmin
+        dy = ymax - ymin
+        dz = zmax - zmin
+
+        def bar(p, d, t, m):
+            return (p + 1) / 2.0 * d * (1 + t * 2) + m - d * t
+
+        t = 0.1
+        x_ = bar(x, dx, t, xmin)
+        y_ = bar(y, dy, t, ymin)
+        z_ = bar(z, dz, t, zmin)
+
+        return x_, y_, z_
+
     def mode_set(self, mode):
         if bpy.context.area.type == 'VIEW_3D':
             bpy.ops.object.mode_set(mode=mode)
