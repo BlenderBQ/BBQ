@@ -11,12 +11,12 @@ from controllers import (set_current_controller, disable_current_controller,
         PotteryListener)
 from communication import clients, send_command
 import communication as com
-from voice.commands import interpret_command
+# from voice.commands import interpret_command
 
 # Mac not-imports
-import platform
-if not platform.mac_ver()[0]:
-    from voice import VoiceRecognition
+# import platform
+# if not platform.mac_ver()[0]:
+#     from voice import VoiceRecognition
 
 def run_server():
     print 'Started: Ctrl-C to kill'
@@ -43,9 +43,9 @@ if __name__ == '__main__':
     # debugging
     com.debug = '--debug' in sys.argv or True
 
-    if not platform.mac_ver()[0]:
-        vr = VoiceRecognition()
-        vr.start()
+    # if not platform.mac_ver()[0]:
+    #     vr = VoiceRecognition()
+    #     vr.start()
 
     set_current_controller([
         GrabListener,

@@ -211,6 +211,7 @@ class BBQOperator(bpy.types.Operator):
         self.move_origin = x, y, z
         self.moving = True
         self.move_matrix_origin = bpy.context.area.spaces[0].region_3d.view_matrix
+        print('save', x, y, z)
 
     def object_move_end(self):
         self.moving = False
@@ -219,13 +220,15 @@ class BBQOperator(bpy.types.Operator):
     def object_move(self, **kwargs):
         tx, ty, tz = kwargs['tx'], kwargs['ty'], kwargs['tz']
         x, y, z = self.move_origin
-        dx, dy, dz = tx - x, ty - y, tz - z
+        dx, dy, dz = tx + x, ty + y, tz + z
         if self.move_lock == 'X':
             dy, dz = y, z
         if self.move_lock == 'Y':
             dx, dz = x, z
         if self.move_lock == 'Z':
             dx, dy = x, y
+        print('tr', tx, ty, tz)
+        print('pos', dx, dy, dz)
         dx, dy, dz = map(blendPos, [dx, dy, dz])
         # mat_trans = mathutils.Matrix.Translation((dx, dy, dz))
         # loc = (self.move_matrix_origin * mat_trans).decompose()[0]
