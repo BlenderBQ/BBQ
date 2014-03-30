@@ -58,7 +58,7 @@ class GrabListener(Leap.Listener):
                     r = math.sqrt(x * x + y * y)
                     pitch = math.atan2(z, r)
                     roll = 0
-                    # send_command('object_rotate_origin', {'yaw': yaw, 'pitch': pitch, 'roll': roll})
+                    send_command('object_rotate_origin', {'yaw': yaw, 'pitch': pitch, 'roll': roll})
 
                 del self._posHistory[:]
 
@@ -72,7 +72,7 @@ class GrabListener(Leap.Listener):
             r = math.sqrt(x * x + y * y)
             pitch = math.atan2(z, r)
             roll = 0
-            # self.sendNewRotation((yaw, pitch, roll))
+            self.sendNewRotation((yaw, pitch, roll))
 
         # Ungrab
         if self._isGrabbing and len(fingers) == self.nbFingersMax:
