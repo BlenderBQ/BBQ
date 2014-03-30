@@ -12,7 +12,7 @@ from communication import send_command
 
 # Risquy imports
 import platform
-if not platform.mac_ver():
+if not platform.mac_ver()[0]:
     from voice import VoiceRecognition
 
 if __name__ == '__main__':
@@ -21,7 +21,7 @@ if __name__ == '__main__':
     sock.bind(socket_path)
     sock.listen(0)
 
-    if not platform.mac_ver():
+    if not platform.mac_ver()[0]:
         vr = VoiceRecognition()
         vr.start()
 
