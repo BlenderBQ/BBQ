@@ -77,6 +77,7 @@ class GrabListener(Leap.Listener):
         # Ungrab
         if self._isGrabbing and len(fingers) == self.nbFingersMax:
             print('Ungrab')
+            send_command('object_move_end', {})
             self._isGrabbing = False
 
     def _isGrab(self, hand, nbFramesAnalyzed=45):
