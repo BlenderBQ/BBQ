@@ -8,14 +8,14 @@ class GrabListener(Leap.Listener):
     """
     The grab gesture is detected when the fingers all converge to the center of the hand.
     """
-    def __init__(self, nbFingersMax=5, threshold=0, nbFramesAnalyzed=0):
+    def __init__(self, nbFingersMin=2, nbFingersMax=5, threshold=15, nbFramesAnalyzed=10):
         Leap.Listener.__init__(self)
 
         self._isGrabbing = False
         self._handOrigin = None
-        self._posHistory = []
         self._fingersHistory = []
 
+        self.nbFingersMin = nbFingersMin
         self.nbFingersMax = nbFingersMax
         self.nbFramesAnalyzed = nbFramesAnalyzed
         self.threshold = threshold
@@ -25,8 +25,8 @@ class GrabListener(Leap.Listener):
         frame = controller.frame()
 
         if len(frame.hands) is not 1:
-            del self._fingersHistory[:]
-            del self._posHistory[:]
+            if self._fingersHistory is not None:
+                del self._fingersHistory[:]
             return
 
         # Getting only the first hand
@@ -35,38 +35,29 @@ class GrabListener(Leap.Listener):
 
         # Grab: analysis of movement to find mode
         if not self._isGrabbing and self._isGrab(hand):
-            print('Grab.')
-
             if self._handOrigin is None:
                 self._handOrigin = hand.stabilized_palm_position
-            else:
-                self._posHistory.append(hand.stabilized_palm_position - self._handOrigin)
 
             # When we have nbFramesAnalyzed positions in the list
-            if True or len(self._posHistory) >= self.nbFramesAnalyzed:
-                sumDistances = 0
+            self._isGrabbing = True
 
-                for i in xrange(len(self._posHistory)):
-                    sumDistances += self._posHistory[i].distance_to(self._posHistory[i - 1])
+            # Move origin
+            send_command('object_move_origin', {'x': self._handOrigin.z, 'y': self._handOrigin.x, 'z': self._handOrigin.y})
 
-                # We want to MOVE!!!
-                if True or sumDistances > self.threshold:
-                    self._isGrabbing = True
-                    send_command('object_move_origin', {'x': self._handOrigin.z, 'y': self._handOrigin.x, 'z': self._handOrigin.y})
-                    x, y, z = hand.palm_normal
-                    yaw = math.atan2(x, y)
-                    r = math.sqrt(x * x + y * y)
-                    pitch = math.atan2(z, r)
-                    roll = 0
-                    send_command('object_rotate_origin', {'yaw': yaw, 'pitch': pitch, 'roll': roll})
-
-                del self._posHistory[:]
+            # Rotate origin
+            x, y, z = hand.palm_normal.x, hand.palm_normal.y, hand.palm_normal.z
+            yaw = math.atan2(x, y)
+            r = math.sqrt(x * x + y * y)
+            pitch = math.atan2(z, r)
+            roll = 0
+            send_command('object_rotate_origin', {'yaw': yaw, 'pitch': pitch, 'roll': roll})
 
         # Grabbing
         if self._isGrabbing:
+            # Move
             self.sendNewPosition(hand.stabilized_palm_position - self._handOrigin)
-            pass #TODO rotate
 
+            # Rotate
             x, y, z = hand.palm_normal.x, hand.palm_normal.y, hand.palm_normal.z
             yaw = math.atan2(x, y)
             r = math.sqrt(x * x + y * y)
@@ -75,12 +66,17 @@ class GrabListener(Leap.Listener):
             self.sendNewRotation((yaw, pitch, roll))
 
         # Ungrab
-        if self._isGrabbing and len(fingers) == self.nbFingersMax:
+        if self._isGrabbing and len(fingers) >= self.nbFingersMin:
             print('Ungrab')
             send_command('object_move_end', {})
             self._isGrabbing = False
+            self._fingersHistory = []
+            self._handOrigin = None
 
     def _isGrab(self, hand, nbFramesAnalyzed=45):
+        if self._fingersHistory is None:
+            return True
+
         fingers = hand.fingers
 
         distances = []
@@ -100,6 +96,9 @@ class GrabListener(Leap.Listener):
                     lessFingers = False
 
             del self._fingersHistory[:]
+
+            if lessFingers:
+                self._fingersHistory = None
 
         return lessFingers
 
@@ -295,5 +294,5 @@ class FingersListener(Leap.Listener):
             'x': tip.x, 'y': tip.y, 'z': tip.z,
             'vx': direction.x, 'vy': direction.y, 'vz': direction.z
         })
-        print('Sending sculpt command pointing at ({}, {}, {})'.format(tip.x, tip.y, tip.z))
+#        print('Sending sculpt command pointing at ({}, {}, {})'.format(tip.x, tip.y, tip.z))
 
