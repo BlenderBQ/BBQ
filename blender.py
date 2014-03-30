@@ -40,7 +40,7 @@ class BBQOperator(bpy.types.Operator):
     def __init__(self):
         print("Starting")
         self.transport = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.transport.setblocking(False)
+        # self.transport.setblocking(False)
         self.sockfile = None
         self.move_origin = 0, 0, 0
         self.moving = False
@@ -79,6 +79,8 @@ class BBQOperator(bpy.types.Operator):
             self.stop_rotation,
             self.my_little_swinging_vase,
             self.sculpt_touch,
+            self.sculpt_add,
+            self.sculpt_subtract,
             self.object_reset_everything,
         ]
         self.commands = {f.__name__: f for f in _commands}
@@ -102,6 +104,11 @@ class BBQOperator(bpy.types.Operator):
         if event.type == 'ESC':
             context.window_manager.event_timer_remove(self._timer)
             return {'FINISHED'}
+
+        if event.type == 'A':
+            self.sculpt_add()
+        if event.type == 'S':
+            self.sculpt_subtract()
 
         if self.moving:
             if event.type == 'X':
@@ -130,6 +137,7 @@ class BBQOperator(bpy.types.Operator):
         try:
             self.x, self.y, self.z = 0, 0, 0
             self.transport.connect(('', 1337))
+            self.transport.setblocking(False)
             self.sockfile = self.transport.makefile()
         except IOError as e:
             logging.exception(e)
@@ -162,6 +170,12 @@ class BBQOperator(bpy.types.Operator):
     def stop_rotation(self):
         self.continuous_speed = 0
         self.rotation_level = 0
+
+    def sculpt_add(self):
+        bpy.data.brushes['SculptDraw'].direction = 'ADD'
+
+    def sculpt_subtract(self):
+        bpy.data.brushes['SculptDraw'].direction = 'SUBTRACT'
 
     def sculpt_touch(self, **kwargs):
         x, y, z = kwargs['x'], kwargs['y'], kwargs['z']
