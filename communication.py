@@ -40,7 +40,7 @@ def send_command(name, data={}):
             except IOError as e:
                 logging.exception(e)
                 clients.remove(c)
-        time.sleep(0.05)
+        time.sleep(0.1)
 
 _filters = {}
 _filter_mapping = {

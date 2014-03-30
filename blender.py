@@ -230,10 +230,11 @@ class BBQOperator(bpy.types.Operator):
             return (p + 1) / 2.0 * d * (1 + t * 2) + m - d * t
 
         # TODO x est toujours constant après transfo. Jeune homme allez i
-        t = 0.1
+        t = 0.8
         x_ = bar(x, dx, t, xmin)
         y_ = bar(y, dy, t, ymin)
         z_ = bar(z, dz, t, zmin)
+        z_ -= dz * 0.42
 
         return x_, y_, z_
 
