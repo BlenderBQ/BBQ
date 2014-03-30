@@ -1,6 +1,7 @@
 from communication import send_command, send_long_command
 import Leap
 import time
+import math
 from leaputils import *
 
 class GrabListener(Leap.Listener):
@@ -39,12 +40,30 @@ class GrabListener(Leap.Listener):
 
             # When we have nbFramesAnalyzed positions in the list
             self._isGrabbing = True
+
+            # Move origin
             send_command('object_move_origin', {'x': self._handOrigin.z, 'y': self._handOrigin.x, 'z': self._handOrigin.y})
+
+            # Rotate origin
+            x, y, z = hand.palm_normal
+            yaw = math.atan2(x, y)
+            r = math.sqrt(x * x + y * y)
+            pitch = math.atan2(z, r)
+            roll = 0
+            send_command('object_rotate_origin', {'yaw': yaw, 'pitch': pitch, 'roll': roll})
 
         # Grabbing
         if self._isGrabbing:
+            # Move
             self.sendNewPosition(hand.stabilized_palm_position - self._handOrigin)
-            pass #TODO rotate
+
+            # Rotate
+            x, y, z = hand.palm_normal.x, hand.palm_normal.y, hand.palm_normal.z
+            yaw = math.atan2(x, y)
+            r = math.sqrt(x * x + y * y)
+            pitch = math.atan2(z, r)
+            roll = 0
+            self.sendNewRotation((yaw, pitch, roll))
 
         # Ungrab
         if self._isGrabbing and len(fingers) >= self.nbFingersMin:
@@ -85,6 +104,13 @@ class GrabListener(Leap.Listener):
         print 'sendNewPosition', positionFromHand
         send_long_command('object_move', {'tx': positionFromHand.z, 'ty': positionFromHand.x, 'tz': positionFromHand.y},
                 filters={'tx': 'coordinate', 'ty': 'coordinate', 'tz': 'coordinate'})
+        time.sleep(0.02)
+        # print 'Moving object to ({positionFromHand.x}, {positionFromHand.y}, {positionFromHand.z})'.format()
+
+    def sendNewRotation(self, rotation):
+        print 'sendNewRotation', rotation
+        send_long_command('object_rotate', {'yaw': rotation[0], 'pitch': rotation[1], 'roll': rotation[2]},
+                filters={'yaw': 'coordinate', 'pitch': 'coordinate', 'roll': 'coordinate'})
         time.sleep(0.02)
         # print 'Moving object to ({positionFromHand.x}, {positionFromHand.y}, {positionFromHand.z})'.format()
 

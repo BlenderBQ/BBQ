@@ -9,11 +9,10 @@ from controllers import (set_current_controller, disable_current_controller,
 from controllers.pottery import PotteryListener
 from communication import clients
 from communication import send_command
-
-# Risquy imports
-import platform
-if not platform.mac_ver():
-    from voice import VoiceRecognition
+# # Risquy imports
+# import platform
+# if not platform.mac_ver():
+#     from voice import VoiceRecognition
 
 if __name__ == '__main__':
     socket_path = 'server.sock'
@@ -21,9 +20,9 @@ if __name__ == '__main__':
     sock.bind(socket_path)
     sock.listen(0)
 
-    if not platform.mac_ver():
-        vr = VoiceRecognition()
-        vr.start()
+    # if not platform.mac_ver():
+    #     vr = VoiceRecognition()
+    #     vr.start()
 
     set_current_controller([
         GrabListener,
