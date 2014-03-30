@@ -13,6 +13,7 @@ clients = []
 from pprint import pformat
 dont_use_network = False
 
+
 _lock = threading.Lock()
 def send_command(name, data={}):
     """
@@ -48,6 +49,10 @@ def send_long_command(name, data, filters=None):
     """
     if filters is None:
         filters = {}
+
+    # Short circuit: no filter.
+    return send_command(name, data)
+
     changed = False
     for arg, filter_key in filters.iteritems():
         assert arg in data, "Comment t'es trop nul ! (t'as mis un filtre sur un truc qui existe pas)"
