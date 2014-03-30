@@ -6,12 +6,12 @@ import logging
 
 from filters import Filter, CompositeFilter
 
+# debugging
+from pprint import pformat
+debug = False
+
 # connection sockets for clients
 clients = []
-
-# TODO remove this, used for debugging
-from pprint import pformat
-dont_use_network = False
 
 _lock = threading.Lock()
 def send_command(name, data={}):
@@ -22,9 +22,8 @@ def send_command(name, data={}):
     global clients
     with _lock:
         data['__cmd__'] = name
-        if dont_use_network:
+        if debug:
             print 'Sending:', pformat(data)
-            return
         jdata = json.dumps(data) + '\n'
         for c in clients:
             try:
