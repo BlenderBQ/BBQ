@@ -40,7 +40,7 @@ def set_current_controller(listener_clss):
 basic_controllers = {
         'object': [ScaleListener, GrabListener],
         'sculpt': [FingersListener],
-        'pottery': [PotteryListener, CalmGestureListener],
+        'pottery': [PotteryListener, CalmGestureListener, FingersListener],
         }
 
 if __name__ == '__main__':

@@ -120,8 +120,8 @@ class BBQOperator(bpy.types.Operator):
                         self.commands[func](**kwargs)
 
         # TODO remove
-        self.x = event.mouse_x
-        self.y = event.mouse_y
+        # self.x = event.mouse_x
+        # self.y = event.mouse_y
 
         return {'RUNNING_MODAL'}
 
@@ -183,17 +183,27 @@ class BBQOperator(bpy.types.Operator):
 
         dist = 0.42 # magic number
         x2, y2, z2 = x + vx * dist, y + vy * dist, z + vz * dist
+        x, y, z = self.foo(x, y, z)
+        x2, y2, z2 = self.foo(x2, y2, z2)
+        self.x, self.y, self.z = x, y, z
 
-        p1 = bpy.types.OperatorStrokeElement()
-        p1.is_start = True
-        p1.location = x, y, z
-        p1.pressure = 1.0
-        p1.time = 1.0
+        print('#####', x, y, z)
 
-        p2 = bpy.types.OperatorStrokeElement()
-        p2.is_start = False
-        p2.pressure = 1.0
-        p2.time = 1.0
+        p1 = { 'name': 'dummy_foo',
+                'is_start': True,
+                'location': (x, y, z),
+                'mouse': (0, 0),
+                'pressure': 1.0,
+                'pen_flip': False,
+                'time': 1.0}
+
+        p2 = { 'name': 'dummy_bar',
+                'is_start': False,
+                'location': (x2, y2, z2),
+                'mouse': (0, 0),
+                'pressure': 1.0,
+                'pen_flip': False,
+                'time': 1.0}
 
         bpy.ops.sculpt.brush_stroke(stroke=[p1, p2])
 

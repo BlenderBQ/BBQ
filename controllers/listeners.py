@@ -290,7 +290,7 @@ class FingersListener(Leap.Listener):
         # TODO: rescale coordinates, center them at user-confortable origin
         tip = rescale_position(tip)
 
-        send_command('sculp_touch', {
+        send_command('sculpt_touch', {
             'x': tip.x, 'y': tip.y, 'z': tip.z,
             'vx': direction.x, 'vy': direction.y, 'vz': direction.z
         })
