@@ -31,7 +31,9 @@ class Filter(object):
             self.history = self.history[-self.window_length:]
         mean = (mean + new_value) / self.window_length
 
-        value = abs(mean - previous) / previous
+        value = abs(mean - previous)
+        if previous != 0:
+            value /= previous
         interesting = (value > self.threshold)
         return mean, interesting
 
