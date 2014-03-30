@@ -34,11 +34,9 @@ def cleanup_server():
     sock.close()
     for pipe in clients:
         pipe.close()
-    if isinstance(server_address, (str, unicode)):
-        os.remove(server_address)
 
 if __name__ == '__main__':
-    sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.bind(server_address)
     sock.listen(0)
 

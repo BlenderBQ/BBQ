@@ -1,3 +1,5 @@
+import sys
+sys.path.append('.')
 import bpy
 import bgl
 import socket
@@ -38,7 +40,7 @@ class BBQOperator(bpy.types.Operator):
 
     def __init__(self):
         print("Starting")
-        self.transport = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        self.transport = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.transport.setblocking(False)
         self.sockfile = None
         self.move_origin = 0, 0, 0
@@ -135,7 +137,7 @@ class BBQOperator(bpy.types.Operator):
     def invoke(self, context, event):
         try:
             self.x, self.y, self.z = 0, 0, 0
-            self.transport.connect(config.server_address)
+            self.transport.connect(server_address)
             self.sockfile = self.transport.makefile()
         except IOError as e:
             logging.exception(e)
