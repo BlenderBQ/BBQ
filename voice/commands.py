@@ -23,7 +23,7 @@ _mode_mapping = {
 def enter_mode(mode):
     print 'entering mode:', mode
     if mode not in _mode_mapping:
-        print 'COMMENT T4ES TROP NUL', mode
+        print 'COMMENT T\'ES TROP NUL', mode
     set_current_controller(_mode_mapping[mode])
 
 _cmd_mapping = {
@@ -36,10 +36,17 @@ _cmd_mapping = {
             'pottery': partial(enter_mode, 'pottery'),
             'object': partial(enter_mode, 'object'),
             'drop': partial(enter_mode, 'default'),
+            'exit': None
             }
 
 def interpret_command(cmd):
     if cmd not in _cmd_mapping:
         print "T'es trop nul, ta commande elle est naze", cmd
         return
-    _cmd_mapping[cmd]()
+    # Whenever leaving pottery mode, stop rotation
+    send_command('stop_rotation')
+
+    if _cmd_mapping[cmd]:
+        _cmd_mapping[cmd]()
+    else:
+        return cmd

@@ -63,7 +63,8 @@ if __name__ == '__main__':
         try:
             t.start()
             try:
-                while True:
+                cmd = ''
+                while cmd is not 'exit':
                     cmd = raw_input('Command ?').strip()
                     if not cmd:
                         pass
