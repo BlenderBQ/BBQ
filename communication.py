@@ -24,7 +24,8 @@ def send_command(name, data={}):
     function's kwargs.
     """
     global clients
-    with _lock:
+    # with _lock:
+    if True:
         data['__cmd__'] = name
         if debug:
             print 'Sending:', pformat(data)

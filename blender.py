@@ -209,12 +209,12 @@ class BBQOperator(bpy.types.Operator):
 
     def foo(self, x, y, z):
         bbox = bpy.context.selected_objects[0].bound_box
-        xmin = min(pos[0] for pos in bbox if pos[0] != -1)
-        ymin = min(pos[1] for pos in bbox if pos[1] != -1)
-        zmin = min(pos[2] for pos in bbox if pos[2] != -1)
-        xmax = max(pos[0] for pos in bbox if pos[0] != -1)
-        ymax = max(pos[1] for pos in bbox if pos[1] != -1)
-        zmax = max(pos[2] for pos in bbox if pos[2] != -1)
+        xmin = min(pos[0] for pos in bbox)
+        ymin = min(pos[1] for pos in bbox)
+        zmin = min(pos[2] for pos in bbox)
+        xmax = max(pos[0] for pos in bbox)
+        ymax = max(pos[1] for pos in bbox)
+        zmax = max(pos[2] for pos in bbox)
 
         dx = xmax - xmin
         dy = ymax - ymin
@@ -223,6 +223,7 @@ class BBQOperator(bpy.types.Operator):
         def bar(p, d, t, m):
             return (p + 1) / 2.0 * d * (1 + t * 2) + m - d * t
 
+        # TODO x est toujours constant après transfo. Jeune homme allez i
         t = 0.1
         x_ = bar(x, dx, t, xmin)
         y_ = bar(y, dy, t, ymin)

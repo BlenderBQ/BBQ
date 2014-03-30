@@ -294,5 +294,6 @@ class FingersListener(Leap.Listener):
             'x': tip.x, 'y': tip.y, 'z': tip.z,
             'vx': direction.x, 'vy': direction.y, 'vz': direction.z
         })
+        time.sleep(0.02)
 #        print('Sending sculpt command pointing at ({}, {}, {})'.format(tip.x, tip.y, tip.z))
 
