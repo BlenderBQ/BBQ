@@ -41,7 +41,7 @@ if __name__ == '__main__':
     sock.listen(0)
 
     # debugging
-    com.debug = '--debug' in sys.argv or True
+    com.debug = '--debug' in sys.argv # or True
 
     # if not platform.mac_ver()[0]:
     #     vr = VoiceRecognition()

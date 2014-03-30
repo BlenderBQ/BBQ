@@ -54,7 +54,7 @@ def send_long_command(name, data, filters=None):
         filters = {}
 
     # Short circuit: no filter.
-    return send_command(name, data)
+    #return send_command(name, data)
 
     changed = False
     for arg, filter_key in filters.iteritems():
@@ -67,7 +67,10 @@ def send_long_command(name, data, filters=None):
         new_value, interesting = cmd_filters[arg].apply(data[arg])
         if not interesting:
             continue
+        print arg, 'is interesting with value', new_value
         data[arg] = new_value
         changed = True
     if changed:
         return send_command(name, data)
+    else:
+        print 'Command not sent'

@@ -8,7 +8,7 @@ class GrabListener(Leap.Listener):
     """
     The grab gesture is detected when the fingers all converge to the center of the hand.
     """
-    def __init__(self, nbFingersMin=2, nbFingersMax=5, threshold=15, nbFramesAnalyzed=10):
+    def __init__(self, nbFingersMin=2, nbFingersMax=5, threshold=3, nbFramesAnalyzed=30):
         Leap.Listener.__init__(self)
 
         self._isGrabbing = False
@@ -24,12 +24,12 @@ class GrabListener(Leap.Listener):
         # Get the most recent frame
         frame = controller.frame()
 
+        # Getting only one hand
         if len(frame.hands) is not 1:
             if self._fingersHistory is not None:
                 del self._fingersHistory[:]
             return
 
-        # Getting only the first hand
         hand = frame.hands[0]
         fingers = hand.fingers
 
@@ -38,7 +38,6 @@ class GrabListener(Leap.Listener):
             if self._handOrigin is None:
                 self._handOrigin = hand.stabilized_palm_position
 
-            # When we have nbFramesAnalyzed positions in the list
             self._isGrabbing = True
 
             # Move origin
@@ -63,7 +62,8 @@ class GrabListener(Leap.Listener):
             r = math.sqrt(x * x + y * y)
             pitch = math.atan2(z, r)
             roll = 0
-            self.sendNewRotation((yaw, pitch, roll))
+            # TODO: enable back
+            # self.sendNewRotation((yaw, pitch, roll))
 
         # Ungrab
         if self._isGrabbing and len(fingers) >= self.nbFingersMin:
@@ -73,7 +73,7 @@ class GrabListener(Leap.Listener):
             self._fingersHistory = []
             self._handOrigin = None
 
-    def _isGrab(self, hand, nbFramesAnalyzed=45):
+    def _isGrab(self, hand):
         if self._fingersHistory is None:
             return True
 
@@ -86,7 +86,7 @@ class GrabListener(Leap.Listener):
         self._fingersHistory.append(len(hand.fingers))
 
         lessFingers = False
-        if len(self._fingersHistory) == nbFramesAnalyzed:
+        if len(self._fingersHistory) == self.nbFramesAnalyzed:
 
             lessFingers = self._fingersHistory[-1] == 0
             lessFingers = lessFingers and self._fingersHistory[-1] < self._fingersHistory[0]

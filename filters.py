@@ -6,7 +6,7 @@ class Filter(object):
     def __init__(self, window_length=5, threshold=0.01):
         super(Filter, self).__init__()
         self.window_length = window_length
-        self.threshold = threshold # Need at least 1% change in value to be interesting
+        self.threshold = threshold # Need at least x % change in value to be interesting
         self.history = []
 
     def apply(self, new_value):
