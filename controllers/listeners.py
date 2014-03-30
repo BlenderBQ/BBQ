@@ -296,8 +296,8 @@ class FingersListener(Leap.Listener):
 
         #print 'sculpt_touch', tip, direction
         send_command('sculpt_touch', {
-            'x': tip.x, 'y': tip.y, 'z': tip.z,
-            'vx': direction.x, 'vy': direction.y, 'vz': direction.z
+            'x': tip.z, 'y': tip.x, 'z': tip.y,
+            'vx': direction.z, 'vy': direction.x, 'vz': direction.y
         })
-#        print('Sending sculpt command pointing at ({}, {}, {})'.format(tip.x, tip.y, tip.z))
+#        print('Sending sculpt command pointing at ({}, {}, {})'.format(tip.z, tip.x, tip.y))
 
