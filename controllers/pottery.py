@@ -16,7 +16,7 @@ class PotteryListener(Leap.Listener):
         self.max_rotation_level = 5.
 
         # max rotation speed
-        rotation_inc = 12.42
+        rotation_inc = 2 # In degrees / increment
         self.max_rotation_speed = self.max_rotation_level * rotation_inc
 
         # swipe ttl
