@@ -6,6 +6,10 @@ import logging
 
 from filters import Filter, CompositeFilter
 
+# debugging
+from pprint import pformat
+debug = False
+
 # connection sockets for clients
 clients = []
 
@@ -22,9 +26,8 @@ def send_command(name, data={}):
     global clients
     with _lock:
         data['__cmd__'] = name
-        if dont_use_network:
+        if debug:
             print 'Sending:', pformat(data)
-            return
         jdata = json.dumps(data) + '\n'
         for c in clients:
             try:
@@ -48,6 +51,10 @@ def send_long_command(name, data, filters=None):
     """
     if filters is None:
         filters = {}
+
+    # Short circuit: no filter.
+    return send_command(name, data)
+
     changed = False
     for arg, filter_key in filters.iteritems():
         assert arg in data, "Comment t'es trop nul ! (t'as mis un filtre sur un truc qui existe pas)"
