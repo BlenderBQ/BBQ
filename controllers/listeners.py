@@ -7,7 +7,7 @@ class GrabListener(Leap.Listener):
     """
     The grab gesture is detected when the fingers all converge to the center of the hand.
     """
-    def __init__(self, nbFingersMax=5, threshold=15, nbFramesAnalyzed=10):
+    def __init__(self, nbFingersMax=5, threshold=0, nbFramesAnalyzed=0):
         Leap.Listener.__init__(self)
 
         self._isGrabbing = False
@@ -42,14 +42,14 @@ class GrabListener(Leap.Listener):
                 self._posHistory.append(hand.stabilized_palm_position - self._handOrigin)
 
             # When we have nbFramesAnalyzed positions in the list
-            if len(self._posHistory) == self.nbFramesAnalyzed:
+            if True or len(self._posHistory) >= self.nbFramesAnalyzed:
                 sumDistances = 0
 
                 for i in xrange(len(self._posHistory)):
                     sumDistances += self._posHistory[i].distance_to(self._posHistory[i - 1])
 
                 # We want to MOVE!!!
-                if sumDistances > self.threshold:
+                if True or sumDistances > self.threshold:
                     self._isGrabbing = True
                     send_command('object_move_origin', {'x': self._handOrigin.z, 'y': self._handOrigin.x, 'z': self._handOrigin.y})
 
@@ -58,10 +58,11 @@ class GrabListener(Leap.Listener):
         # Grabbing
         if self._isGrabbing:
             self.sendNewPosition(hand.stabilized_palm_position - self._handOrigin)
-            pass#TODO rotate
+            pass #TODO rotate
 
         # Ungrab
         if self._isGrabbing and len(fingers) == self.nbFingersMax:
+            print('Ungrab')
             self._isGrabbing = False
 
     def _isGrab(self, hand, nbFramesAnalyzed=45):
@@ -92,6 +93,7 @@ class GrabListener(Leap.Listener):
         send_long_command('object_move', {'tx': positionFromHand.z, 'ty': positionFromHand.x, 'tz': positionFromHand.y},
                 filters={'tx': 'coordinate', 'ty': 'coordinate', 'tz': 'coordinate'})
         time.sleep(0.02)
+        # print 'Moving object to ({positionFromHand.x}, {positionFromHand.y}, {positionFromHand.z})'.format()
 
 class ScaleListener(Leap.Listener):
     """
@@ -236,8 +238,11 @@ class FingersListener(Leap.Listener):
     This gesture is intended for sculpt mode.
     Each finger could potentially send "pressure" commands.
     """
-    def __init__(self):
+    def __init__(self, threshold = 1, lengthThreshold = 25, nbFramesAnalyzed = 30):
         Leap.Listener.__init__(self)
+        self.threshold = threshold
+        self.lengthThreshold = lengthThreshold
+        self.nbFramesAnalyzed = nbFramesAnalyzed
 
     def on_frame(self, controller):
         # Get the most recent frame
@@ -246,11 +251,19 @@ class FingersListener(Leap.Listener):
         # Need at least one hand
         if not frame.hands:
             return
+        # And three fingers at most
+        nFingers = 0
+        for hand in frame.hands:
+            nFingers += len(hand.fingers)
+        if nFingers > 2 or nFingers < 1:
+            return
 
         for hand in frame.hands:
             for finger in hand.fingers:
-                # TODO: only activate if no other gesture is ongoing
-                self.activateGesture(finger.stabilized_tip_position, finger.direction)
+                # Each finger must be present for some time before being able to paint
+                # and have a minimum length
+                if finger.time_visible > self.threshold and finger.length > self.lengthThreshold:
+                    self.activateGesture(finger.stabilized_tip_position, finger.direction)
 
     def activateGesture(self, tip, direction):
         # TODO: rescale coordinates, center them at user-confortable origin
