@@ -23,7 +23,7 @@ _mode_mapping = {
 def enter_mode(mode):
     print 'entering mode:', mode
     if mode not in _mode_mapping:
-        print 'COMMENT T4ES TROP NUL', mode
+        print 'COMMENT T\'ES TROP NUL', mode
     set_current_controller(_mode_mapping[mode])
 
 _cmd_mapping = {
@@ -40,6 +40,8 @@ _cmd_mapping = {
 
 def interpret_command(cmd):
     if cmd not in _cmd_mapping:
+        if 'above' == cmd:
+            print 'AbOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOVE!!!!!!!!'
         print "T'es trop nul, ta commande elle est naze", cmd
         return
     _cmd_mapping[cmd]()
