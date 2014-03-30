@@ -12,6 +12,7 @@ from controllers import (set_current_controller, disable_current_controller,
 from communication import clients, send_command
 import communication as com
 from commands import interpret_command
+from config import server_address
 
 # Mac not-imports
 import platform
@@ -33,27 +34,20 @@ def cleanup_server():
     sock.close()
     for pipe in clients:
         pipe.close()
-    os.remove(socket_path)
+    if isinstance(server_address, (str, unicode)):
+        os.remove(server_address)
 
 if __name__ == '__main__':
-    socket_path = 'server.sock'
     sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-    sock.bind(socket_path)
+    sock.bind(server_address)
     sock.listen(0)
 
     # debugging
-    com.debug = '--debug' in sys.argv # or True
+    com.debug = '--debug' in sys.argv
 
     if not platform.mac_ver()[0]:
         vr = VoiceRecognition()
         vr.start()
-
-    set_current_controller([
-        GrabListener,
-        ScaleListener,
-        PotteryListener,
-        CalmGestureListener
-    ])
 
     # default mode
     set_current_controller('object')
