@@ -1,4 +1,4 @@
-Language model created by QuickLM on Sat Mar 29 17:39:29 EDT 2014
+Language model created by QuickLM on Sat Mar 29 22:56:08 EDT 2014
 Copyright (c) 1996-2010 Carnegie Mellon University and Alexander I. Rudnicky
 
 The model is in standard ARPA format, designed by Doug Paul while he was at MITRE.
@@ -7,46 +7,61 @@ The code that was used to produce this language model is available in Open Sourc
 Please visit http://www.speech.cs.cmu.edu/tools/ for more information
 
 The (fixed) discount mass is 0.5. The backoffs are computed using the ratio method.
-This model based on a corpus of 11 sentences and 13 words
+This model based on a corpus of 16 sentences and 18 words
 
 \data\
-ngram 1=13
-ngram 2=22
-ngram 3=11
+ngram 1=18
+ngram 2=32
+ngram 3=16
 
 \1-grams:
 -0.7782 </s> -0.3010
 -0.7782 <s> -0.2218
--1.8195 CENTER -0.2218
--1.8195 DROP -0.2218
--1.8195 LEFT -0.2218
--1.8195 OBJECT -0.2218
--1.8195 OVER -0.2218
--1.8195 PAINT -0.2218
--1.8195 RIGHT -0.2218
--1.8195 SCULPT -0.2218
--1.8195 SLEEP -0.2218
--1.8195 UNDER -0.2218
--1.8195 WAKE -0.2218
+-1.9823 ABOVE -0.2218
+-1.9823 BELOW -0.2218
+-1.9823 CENTER -0.2218
+-1.9823 DEFAULT -0.2218
+-1.9823 DROP -0.2218
+-1.9823 EXIT -0.2218
+-1.9823 LEFT -0.2218
+-1.9823 OBJECT -0.2218
+-1.9823 OVER -0.2218
+-1.9823 POTTERY -0.2218
+-1.9823 RESET -0.2218
+-1.9823 RIGHT -0.2218
+-1.9823 SCULPT -0.2218
+-1.9823 SLEEP -0.2218
+-1.9823 UNDER -0.2218
+-1.9823 WAKE -0.2218
 
 \2-grams:
--1.3424 <s> CENTER 0.0000
--1.3424 <s> DROP 0.0000
--1.3424 <s> LEFT 0.0000
--1.3424 <s> OBJECT 0.0000
--1.3424 <s> OVER 0.0000
--1.3424 <s> PAINT 0.0000
--1.3424 <s> RIGHT 0.0000
--1.3424 <s> SCULPT 0.0000
--1.3424 <s> SLEEP 0.0000
--1.3424 <s> UNDER 0.0000
--1.3424 <s> WAKE 0.0000
+-1.5051 <s> ABOVE 0.0000
+-1.5051 <s> BELOW 0.0000
+-1.5051 <s> CENTER 0.0000
+-1.5051 <s> DEFAULT 0.0000
+-1.5051 <s> DROP 0.0000
+-1.5051 <s> EXIT 0.0000
+-1.5051 <s> LEFT 0.0000
+-1.5051 <s> OBJECT 0.0000
+-1.5051 <s> OVER 0.0000
+-1.5051 <s> POTTERY 0.0000
+-1.5051 <s> RESET 0.0000
+-1.5051 <s> RIGHT 0.0000
+-1.5051 <s> SCULPT 0.0000
+-1.5051 <s> SLEEP 0.0000
+-1.5051 <s> UNDER 0.0000
+-1.5051 <s> WAKE 0.0000
+-0.3010 ABOVE </s> -0.3010
+-0.3010 BELOW </s> -0.3010
 -0.3010 CENTER </s> -0.3010
+-0.3010 DEFAULT </s> -0.3010
 -0.3010 DROP </s> -0.3010
+-0.3010 EXIT </s> -0.3010
 -0.3010 LEFT </s> -0.3010
 -0.3010 OBJECT </s> -0.3010
 -0.3010 OVER </s> -0.3010
--0.3010 PAINT </s> -0.3010
+-0.3010 POTTERY </s> -0.3010
+-0.3010 RESET </s> -0.3010
 -0.3010 RIGHT </s> -0.3010
 -0.3010 SCULPT </s> -0.3010
 -0.3010 SLEEP </s> -0.3010
@@ -54,12 +69,17 @@ ngram 3=11
 -0.3010 WAKE </s> -0.3010
 
 \3-grams:
+-0.3010 <s> ABOVE </s>
+-0.3010 <s> BELOW </s>
 -0.3010 <s> CENTER </s>
+-0.3010 <s> DEFAULT </s>
 -0.3010 <s> DROP </s>
+-0.3010 <s> EXIT </s>
 -0.3010 <s> LEFT </s>
 -0.3010 <s> OBJECT </s>
 -0.3010 <s> OVER </s>
--0.3010 <s> PAINT </s>
+-0.3010 <s> POTTERY </s>
+-0.3010 <s> RESET </s>
 -0.3010 <s> RIGHT </s>
 -0.3010 <s> SCULPT </s>
 -0.3010 <s> SLEEP </s>

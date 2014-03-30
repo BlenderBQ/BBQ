@@ -37,7 +37,6 @@ class Filter(object):
         interesting = (value > self.threshold)
         return mean, interesting
 
-
 class CompositeFilter(object):
     """Compose N Filter objects to filter N dimensional data"""
 

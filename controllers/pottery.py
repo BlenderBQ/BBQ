@@ -19,7 +19,7 @@ class PotteryListener(Leap.Listener):
         controller.enable_gesture(Leap.Gesture.TYPE_SWIPE);
 
     def on_exit(self, controller):
-        pass #controller.disable_gesture(Leap.Gesture.TYPE_SCREEN_TAP);
+        send_command('stop_rotation')
 
     def on_frame(self, controller):
         frame = controller.frame()
