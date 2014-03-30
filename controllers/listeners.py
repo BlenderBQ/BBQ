@@ -111,7 +111,7 @@ class GrabListener(Leap.Listener):
 
     def sendNewRotation(self, rotation):
         print 'sendNewRotation', rotation
-        send_long_command('object_rotation', {'yaw': rotation[0], 'pitch': rotation[1], 'roll': rotation[2]},
+        send_long_command('object_rotate', {'yaw': rotation[0], 'pitch': rotation[1], 'roll': rotation[2]},
                 filters={'yaw': 'coordinate', 'pitch': 'coordinate', 'roll': 'coordinate'})
         time.sleep(0.02)
         # print 'Moving object to ({positionFromHand.x}, {positionFromHand.y}, {positionFromHand.z})'.format()
