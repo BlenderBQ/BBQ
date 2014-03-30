@@ -8,10 +8,10 @@ class GrabListener(Leap.Listener):
     """
     The grab gesture is detected when the fingers all converge to the center of the hand.
     """
-    def __init__(self, nbFingersMin=2, nbFingersMax=5, threshold=3, nbFramesAnalyzed=30):
+    def __init__(self, nbFingersMin=3, nbFingersMax=5, threshold=3, nbFramesAnalyzed=30):
         Leap.Listener.__init__(self)
 
-        self._isGrabbing = False
+        self.is_grabbing = False
         self._handOrigin = None
         self._fingersHistory = []
 
@@ -34,27 +34,16 @@ class GrabListener(Leap.Listener):
         fingers = hand.fingers
 
         # Grab: analysis of movement to find mode
-        if not self._isGrabbing and self._isGrab(hand):
-            if self._handOrigin is None:
-                self._handOrigin = hand.stabilized_palm_position
+        if not self.is_grabbing and self.can_grab(hand):
+            self.begin_grab(hand)
 
-            self._isGrabbing = True
-
-            # Move origin
-            send_command('object_move_origin', {'x': self._handOrigin.z, 'y': self._handOrigin.x, 'z': self._handOrigin.y})
-
-            # Rotate origin
-            x, y, z = hand.palm_normal.x, hand.palm_normal.y, hand.palm_normal.z
-            yaw = math.atan2(x, y)
-            r = math.sqrt(x * x + y * y)
-            pitch = math.atan2(z, r)
-            roll = 0
-            send_command('object_rotate_origin', {'yaw': yaw, 'pitch': pitch, 'roll': roll})
-
-        # Grabbing
-        if self._isGrabbing:
+        # Grabbing logic
+        if self.is_grabbing:
             # Move
-            self.sendNewPosition(hand.stabilized_palm_position - self._handOrigin)
+            positionFromHand = hand.stabilized_palm_position - self._handOrigin
+            print 'sendNewPosition', positionFromHand
+            send_long_command('object_move', {'tx': positionFromHand.z, 'ty': positionFromHand.x, 'tz': positionFromHand.y},
+                    filters={'tx': 'coordinate', 'ty': 'coordinate', 'tz': 'coordinate'})
 
             # Rotate
             x, y, z = hand.palm_normal.x, hand.palm_normal.y, hand.palm_normal.z
@@ -63,17 +52,17 @@ class GrabListener(Leap.Listener):
             pitch = math.atan2(z, r)
             roll = 0
             # TODO: enable back
-            # self.sendNewRotation((yaw, pitch, roll))
+            #print 'sendNewRotation', rotation
+            #send_long_command('object_rotate', {'yaw': rotation[0], 'pitch': rotation[1], 'roll': rotation[2]},
+                    #filters={'yaw': 'coordinate', 'pitch': 'coordinate', 'roll': 'coordinate'})
+
+            time.sleep(0.02)
 
         # Ungrab
-        if self._isGrabbing and len(fingers) >= self.nbFingersMin:
-            print('Ungrab')
-            send_command('object_move_end', {})
-            self._isGrabbing = False
-            self._fingersHistory = []
-            self._handOrigin = None
+        if self.is_grabbing and len(fingers) >= self.nbFingersMin:
+            self.end_grab()
 
-    def _isGrab(self, hand):
+    def can_grab(self, hand):
         if self._fingersHistory is None:
             return True
 
@@ -102,19 +91,30 @@ class GrabListener(Leap.Listener):
 
         return lessFingers
 
-    def sendNewPosition(self, positionFromHand):
-        print 'sendNewPosition', positionFromHand
-        send_long_command('object_move', {'tx': positionFromHand.z, 'ty': positionFromHand.x, 'tz': positionFromHand.y},
-                filters={'tx': 'coordinate', 'ty': 'coordinate', 'tz': 'coordinate'})
-        time.sleep(0.02)
-        # print 'Moving object to ({positionFromHand.x}, {positionFromHand.y}, {positionFromHand.z})'.format()
+    def begin_grab(self, hand):
+        print('Grab')
+        if self._handOrigin is None:
+            self._handOrigin = hand.stabilized_palm_position
 
-    def sendNewRotation(self, rotation):
-        print 'sendNewRotation', rotation
-        send_long_command('object_rotate', {'yaw': rotation[0], 'pitch': rotation[1], 'roll': rotation[2]},
-                filters={'yaw': 'coordinate', 'pitch': 'coordinate', 'roll': 'coordinate'})
-        time.sleep(0.02)
-        # print 'Moving object to ({positionFromHand.x}, {positionFromHand.y}, {positionFromHand.z})'.format()
+        self.is_grabbing = True
+
+        # Move origin
+        send_command('object_move_origin', {'x': self._handOrigin.z, 'y': self._handOrigin.x, 'z': self._handOrigin.y})
+
+        # Rotate origin
+        x, y, z = hand.palm_normal.x, hand.palm_normal.y, hand.palm_normal.z
+        yaw = math.atan2(x, y)
+        r = math.sqrt(x * x + y * y)
+        pitch = math.atan2(z, r)
+        roll = 0
+        send_command('object_rotate_origin', {'yaw': yaw, 'pitch': pitch, 'roll': roll})
+
+    def end_grab(self):
+        print('Ungrab')
+        send_command('object_move_end', {})
+        self.is_grabbing = False
+        self._fingersHistory = []
+        self._handOrigin = None
 
 class ScaleListener(Leap.Listener):
     """
