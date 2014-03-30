@@ -13,6 +13,7 @@ camera
 
 pottery
 sculpt
+paint
 object
 render
 
