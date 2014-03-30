@@ -37,7 +37,7 @@ def cleanup_server():
 
 if __name__ == '__main__':
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.bind(server_address)
+    sock.bind(('', server_address[1]))
     sock.listen(0)
 
     # debugging

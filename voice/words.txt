@@ -20,3 +20,6 @@ exit
 
 sleep
 wake
+
+add
+substract
