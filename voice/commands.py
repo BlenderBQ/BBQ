@@ -18,7 +18,6 @@ _mode_mapping = {
         'sculpt': 'sculpt',
         'pottery': 'pottery',
         'object': 'object',
-        'default': 'object',
         }
 def enter_mode(mode):
     print 'entering mode:', mode
@@ -34,19 +33,19 @@ _cmd_mapping = {
             'center': center_object, 'reset': reset_object,
             'above': partial(view_from, 'top'), 'over': partial(view_from, 'top'),
             'below': partial(view_from, 'bottom'), 'under': partial(view_from, 'bottom'),
+            'camera': partial(view_from, 'camera'),
+            'front': partial(view_from, 'front'),
+            'back': partial(view_from, 'back'),
             'left': partial(view_from, 'left'),
             'right': partial(view_from, 'right'),
             'sculpt': partial(enter_mode, 'sculpt'),
             'pottery': partial(enter_mode, 'pottery'),
             'object': partial(enter_mode, 'object'),
-            'default': partial(enter_mode, 'default'), 'drop': partial(enter_mode, 'default'),
             'exit': None,
             }
 
 def interpret_command(cmd):
     if cmd not in _cmd_mapping:
-        if 'above' == cmd:
-            print 'AbOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOVE!!!!!!!!'
         print "T'es trop nul, ta commande elle est naze", cmd
         return
 

@@ -43,9 +43,10 @@ class GrabListener(Leap.Listener):
         # Grabbing logic
         if is_grabbing:
             # Move
-            pfh = hand.stabilized_palm_position - self.hand_origin
-            send_long_command('object_move', {'tx': pfh.z, 'ty': pfh.x, 'tz': pfh.y},
-                    filters={'tx': 'coordinate', 'ty': 'coordinate', 'tz': 'coordinate'})
+            if self.hand_origin is not None:
+                pfh = hand.stabilized_palm_position - self.hand_origin
+                send_long_command('object_move', {'tx': pfh.z, 'ty': pfh.x, 'tz': pfh.y},
+                        filters={'tx': 'coordinate', 'ty': 'coordinate', 'tz': 'coordinate'})
 
             # Rotate
             x, y, z = hand.palm_normal.x, hand.palm_normal.y, hand.palm_normal.z
@@ -93,8 +94,9 @@ class GrabListener(Leap.Listener):
         return less_fingers
 
     def begin_grab(self, hand):
-        print('Grab')
+        #print('Grab')
         self.hand_origin = hand.stabilized_palm_position
+        #print(hand.stabilized_palm_position)
 
         global is_grabbing
         is_grabbing = True
@@ -111,7 +113,7 @@ class GrabListener(Leap.Listener):
         send_command('object_rotate_origin', {'yaw': yaw, 'pitch': pitch, 'roll': roll})
 
     def end_grab(self):
-        print('Ungrab')
+        #print('Ungrab')
         send_command('object_move_end', {})
         global is_grabbing
         is_grabbing = False
@@ -193,7 +195,7 @@ class ScaleListener(Leap.Listener):
         del self.history[:]
 
         send_command('object_scale_origin', {})
-        print('Starting to scale object')
+        #print('Starting to scale object')
 
     def sendNewScalingFactor(self, factor):
         send_long_command('object_scale', {
@@ -203,7 +205,7 @@ class ScaleListener(Leap.Listener):
             },
             filters={'sx': 'coordinate', 'sy': 'coordinate', 'sz': 'coordinate'}
         )
-        print('Scaling object of factor {}'.format(factor))
+        #print('Scaling object of factor {}'.format(factor))
 
 class CalmGestureListener(Leap.Listener):
     """
@@ -254,7 +256,7 @@ class CalmGestureListener(Leap.Listener):
     def activateGesture(self):
         del self.history[:]
         send_command('stop_rotation')
-        print('Setting rotation speed to 0')
+        #print('Setting rotation speed to 0')
 
 class FingersListener(Leap.Listener):
     """
@@ -292,7 +294,7 @@ class FingersListener(Leap.Listener):
         # TODO: rescale coordinates, center them at user-confortable origin
         tip = rescale_position(tip)
 
-        print 'sculpt_touch', tip, direction
+        #print 'sculpt_touch', tip, direction
         send_command('sculpt_touch', {
             'x': tip.x, 'y': tip.y, 'z': tip.z,
             'vx': direction.x, 'vy': direction.y, 'vz': direction.z

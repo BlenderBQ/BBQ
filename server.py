@@ -44,9 +44,9 @@ if __name__ == '__main__':
     # debugging
     com.debug = '--debug' in sys.argv # or True
 
-    # if not platform.mac_ver()[0]:
-    #     vr = VoiceRecognition()
-    #     vr.start()
+    if not platform.mac_ver()[0]:
+        vr = VoiceRecognition()
+        vr.start()
 
     set_current_controller([
         GrabListener,
