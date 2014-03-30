@@ -213,6 +213,7 @@ class BBQOperator(bpy.types.Operator):
     def paint_color(self, **kwargs):
         r, g, b = kwargs['r'], kwargs['g'], kwargs['b']
         bpy.data.brushes['TexDraw'].color = r, g, b
+        bpy.data.materials['Cursor'].diffuse_color = r, g, b
 
     def paint_touch(self, **kwargs):
         x, y, z = kwargs['x'], kwargs['y'], kwargs['z']
