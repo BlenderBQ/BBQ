@@ -12,7 +12,6 @@ from controllers import (set_current_controller, disable_current_controller,
 from communication import clients, send_command
 import communication as com
 from commands import interpret_command
-from config import server_address
 
 # Mac not-imports
 import platform
@@ -37,7 +36,7 @@ def cleanup_server():
 
 if __name__ == '__main__':
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.bind(('', server_address[1]))
+    sock.bind(('', 1337))
     sock.listen(0)
 
     # debugging

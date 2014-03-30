@@ -7,7 +7,6 @@ import json
 import math
 import logging
 import mathutils
-from config import server_address
 
 def blendPos(dim):
     return dim / 50.0
