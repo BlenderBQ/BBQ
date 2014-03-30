@@ -23,7 +23,7 @@ def run_server():
     try:
         while True:
             pipe, _ = sock.accept()
-            pipe.settimeout(0.1)
+            pipe.settimeout(0.05)
             clients.append(pipe)
     except KeyboardInterrupt:
         pass
@@ -36,6 +36,10 @@ def cleanup_server():
 
 if __name__ == '__main__':
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    # These options enable the same address and port to be reused quickly
+    # (for example, in two consecutive runs of the script)
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
     sock.bind(('', 1337))
     sock.listen(0)
 
