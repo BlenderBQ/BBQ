@@ -41,7 +41,7 @@ class BBQOperator(bpy.types.Operator):
     def __init__(self):
         print("Starting")
         self.transport = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.transport.setblocking(False)
+        # self.transport.setblocking(False)
         self.sockfile = None
         self.move_origin = 0, 0, 0
         self.moving = False
@@ -138,6 +138,7 @@ class BBQOperator(bpy.types.Operator):
         try:
             self.x, self.y, self.z = 0, 0, 0
             self.transport.connect(server_address)
+            self.transport.setblocking(False)
             self.sockfile = self.transport.makefile()
         except IOError as e:
             logging.exception(e)
