@@ -136,7 +136,7 @@ class BBQOperator(bpy.types.Operator):
     def invoke(self, context, event):
         try:
             self.x, self.y, self.z = 0, 0, 0
-            self.transport.connect(server_address)
+            self.transport.connect(('', 1337))
             self.transport.setblocking(False)
             self.sockfile = self.transport.makefile()
         except IOError as e:
