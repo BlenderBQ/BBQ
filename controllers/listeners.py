@@ -4,6 +4,9 @@ import time
 import math
 from leaputils import *
 
+# first real hack
+is_grabbing = False
+
 class GrabListener(Leap.Listener):
     """
     The grab gesture is detected when the fingers all converge to the center of the hand.
@@ -11,7 +14,7 @@ class GrabListener(Leap.Listener):
     def __init__(self, min_nb_fingers=3, max_nb_fingers=5, threshold=3, history_size=30):
         Leap.Listener.__init__(self)
 
-        self.is_grabbing = False
+        is_grabbing = False
         self.hand_origin = None
         self.fingers_history = []
 
@@ -34,14 +37,13 @@ class GrabListener(Leap.Listener):
         fingers = hand.fingers
 
         # Grab: analysis of movement to find mode
-        if not self.is_grabbing and self.can_grab(hand):
+        if not is_grabbing and self.can_grab(hand):
             self.begin_grab(hand)
 
         # Grabbing logic
-        if self.is_grabbing:
+        if is_grabbing:
             # Move
             pfh = hand.stabilized_palm_position - self.hand_origin
-            print 'sendNewPosition', pfh
             send_long_command('object_move', {'tx': pfh.z, 'ty': pfh.x, 'tz': pfh.y},
                     filters={'tx': 'coordinate', 'ty': 'coordinate', 'tz': 'coordinate'})
 
@@ -51,15 +53,15 @@ class GrabListener(Leap.Listener):
             r = math.sqrt(x * x + y * y)
             pitch = math.atan2(z, r)
             roll = 0
-            # TODO: enable back
-            #print 'sendNewRotation', rotation
+            rotation = (yaw, pitch, roll)
+            # FIXME disable/enable ?
             #send_long_command('object_rotate', {'yaw': rotation[0], 'pitch': rotation[1], 'roll': rotation[2]},
                     #filters={'yaw': 'coordinate', 'pitch': 'coordinate', 'roll': 'coordinate'})
 
             time.sleep(0.02)
 
         # Ungrab
-        if self.is_grabbing and len(fingers) >= self.min_nb_fingers:
+        if is_grabbing and len(fingers) >= self.min_nb_fingers:
             self.end_grab()
 
     def can_grab(self, hand):
@@ -93,10 +95,10 @@ class GrabListener(Leap.Listener):
 
     def begin_grab(self, hand):
         print('Grab')
-        if self.hand_origin is None:
-            self.hand_origin = hand.stabilized_palm_position
+        self.hand_origin = hand.stabilized_palm_position
 
-        self.is_grabbing = True
+        global is_grabbing
+        is_grabbing = True
 
         # Move origin
         send_command('object_move_origin', {'x': self.hand_origin.z, 'y': self.hand_origin.x, 'z': self.hand_origin.y})
@@ -112,7 +114,8 @@ class GrabListener(Leap.Listener):
     def end_grab(self):
         print('Ungrab')
         send_command('object_move_end', {})
-        self.is_grabbing = False
+        global is_grabbing
+        is_grabbing = False
         self.fingers_history = []
         self.hand_origin = None
 
@@ -138,7 +141,8 @@ class ScaleListener(Leap.Listener):
         frame = controller.frame()
 
         # Need at least two hands for this gesture
-        if len(frame.hands) < 2:
+        # and can't scale when grabbing
+        if len(frame.hands) < 2 or is_grabbing:
             del self.history[:]
             return
 
@@ -146,7 +150,7 @@ class ScaleListener(Leap.Listener):
         hand2 = frame.hands[1]
 
         # No (or few) fingers must be visible
-        if (len(hand1.fingers) + len(hand2.fingers) > 1):
+        if len(hand1.fingers) + len(hand2.fingers) > 1:
             self._isScaling = False
             del self.history[:]
             return
