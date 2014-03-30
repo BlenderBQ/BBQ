@@ -79,6 +79,7 @@ class BBQOperator(bpy.types.Operator):
             self.stop_rotation,
             self.my_little_swinging_vase,
             self.paint_touch,
+            self.paint_color,
             self.sculpt_touch,
             self.sculpt_add,
             self.sculpt_subtract,
@@ -208,6 +209,10 @@ class BBQOperator(bpy.types.Operator):
 
         bpy.ops.sculpt.brush_stroke(stroke=[p1, p2])
         self.set_cursor(x, y, z)
+
+    def paint_color(self, **kwargs):
+        r, g, b = kwargs['r'], kwargs['g'], kwargs['b']
+        bpy.data.brushes['TexDraw'].color = r, g, b
 
     def paint_touch(self, **kwargs):
         x, y, z = kwargs['x'], kwargs['y'], kwargs['z']
