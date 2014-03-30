@@ -10,6 +10,7 @@ from listeners import GrabListener
 from listeners import ScaleListener
 from listeners import CalmGestureListener
 from listeners import FingersListener
+from listeners import ColorListener
 
 # global leap controller
 leap_controller = Leap.Controller()
@@ -41,6 +42,7 @@ basic_controllers = {
         'object': [ScaleListener, GrabListener],
         'sculpt': [FingersListener],
         'pottery': [PotteryListener, CalmGestureListener, FingersListener],
+        'paint': [FingersListener, ColorListener]
         }
 
 if __name__ == '__main__':

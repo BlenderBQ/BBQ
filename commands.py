@@ -9,16 +9,17 @@ def view_from(direction):
 _mode_mapping = {
         'sculpt': 'sculpt',
         'pottery': 'pottery',
+        'texture_paint': 'paint',
         'object': 'object',
         }
 def enter_mode(mode):
     print 'entering mode:', mode
     if mode not in _mode_mapping:
         print 'COMMENT T\'ES TROP NUL', mode
-    if mode == 'sculpt' or mode == 'pottery':
+    if mode == 'pottery':
         send_command('mode_sculpt')
     else:
-        send_command('mode_object')
+        send_command('mode_%s' % mode)
     set_current_controller(_mode_mapping[mode])
 
 _cmd_mapping = {
@@ -33,6 +34,7 @@ _cmd_mapping = {
             'left': partial(view_from, 'left'),
             'right': partial(view_from, 'right'),
             'sculpt': partial(enter_mode, 'sculpt'),
+            'paint': partial(enter_mode, 'texture_paint'),
             'pottery': partial(enter_mode, 'pottery'),
             'object': partial(enter_mode, 'object'),
             'add': partial(send_command, 'sculpt_add'),
