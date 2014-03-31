@@ -16,7 +16,7 @@ import logging
 
 # leap python binding
 this_dir = os.path.dirname(os.path.realpath(__name__))
-sys.path.insert(0, os.path.join(this_dir, 'lib'))
+sys.path.insert(0, os.path.join(this_dir, 'libs', 'leap'))
 import Leap
 
 from controllers import set_current_controller, disable_current_controller
