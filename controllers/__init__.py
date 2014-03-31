@@ -1,16 +1,7 @@
-import os, sys
-this_dir = os.path.dirname(os.path.realpath(__name__))
-sys.path.insert(0, os.path.join(this_dir, 'lib'))
-sys.path.insert(0, os.path.join(this_dir, '.'))
-
 import Leap
-from sculpt import SculptListener
-from pottery import PotteryListener
-from listeners import GrabListener
-from listeners import ScaleListener
-from listeners import CalmGestureListener
-from listeners import FingersListener
-from listeners import ColorListener
+from listeners import (GrabListener, ScaleListener, StopListener, PointersListener)
+from pottery import SlideRotateListener
+from paint import ColorListener
 
 # global leap controller
 leap_controller = Leap.Controller()
@@ -18,7 +9,6 @@ leap_controller = Leap.Controller()
 _current_controller = []
 
 def disable_current_controller():
-    global _current_controller
     for lstn in _current_controller:
         leap_controller.remove_listener(lstn)
 
@@ -40,17 +30,7 @@ def set_current_controller(listener_clss):
 
 basic_controllers = {
         'object': [ScaleListener, GrabListener],
-        'sculpt': [FingersListener],
-        'pottery': [PotteryListener, CalmGestureListener, FingersListener],
-        'paint': [FingersListener, ColorListener]
+        'sculpt': [PointersListener],
+        'pottery': [SlideRotateListener, StopListener, PointersListener],
+        'paint': [PointersListener, ColorListener]
         }
-
-if __name__ == '__main__':
-    set_current_controller([SculptListener, PotteryListener, GrabListener, ScaleListener, CalmGestureListener, FingersListener])
-
-    # Keep this process running until Enter is pressed
-    print 'Press Enter to quit...'
-    sys.stdin.readline()
-
-    # Remove the sample listener when done
-    disable_current_controller()

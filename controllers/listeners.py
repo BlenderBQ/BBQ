@@ -1,27 +1,33 @@
-from communication import send_command, send_long_command
-import Leap
-import time
 import math
-from leaputils import *
+import Leap
+from communication import send_command, send_long_command
+from leaputils import rescale_position
 
 # first real hack
 is_grabbing = False
+is_scaling = False
 
 class GrabListener(Leap.Listener):
     """
     The grab gesture is detected when the fingers all converge to the center of the hand.
+    FIXME this class is *extremely* bugged (notably the can_grab method).
     """
-    def __init__(self, min_nb_fingers=3, max_nb_fingers=5, threshold=3, history_size=30):
+    def __init__(self, min_nb_fingers=3, max_nb_fingers=5, threshold=3,
+            history_size=30, rotation_enabled=False):
         Leap.Listener.__init__(self)
-
-        is_grabbing = False
-        self.hand_origin = None
-        self.fingers_history = []
 
         self.min_nb_fingers = min_nb_fingers
         self.max_nb_fingers = max_nb_fingers
-        self.history_size = history_size
         self.threshold = threshold
+        self.history_size = history_size
+        self.rotation_enabled = rotation_enabled
+
+        self.fingers_history = []
+        self.hand_origin = None
+
+    def on_init(self, controller):
+        global is_grabbing
+        is_grabbing = False
 
     def on_frame(self, controller):
         # Get the most recent frame
@@ -30,7 +36,7 @@ class GrabListener(Leap.Listener):
         # Getting only one hand
         if len(frame.hands) is not 1:
             if self.fingers_history is not None:
-                del self.fingers_history[:]
+                self.fingers_history = []
             return
 
         hand = frame.hands[0]
@@ -51,14 +57,12 @@ class GrabListener(Leap.Listener):
             # Rotate
             x, y, z = hand.palm_normal.x, hand.palm_normal.y, hand.palm_normal.z
             yaw = math.atan2(x, y)
-            r = math.sqrt(x * x + y * y)
-            pitch = math.atan2(z, r)
-            roll = 0
+            pitch = math.atan2(z, math.sqrt(x ** 2 + y ** 2))
+            roll = 0 # osef du roll
             rotation = (yaw, pitch, roll)
-            # FIXME disable/enable ?
-            #send_long_command('object_rotate', {'yaw': rotation[0], 'pitch': rotation[1], 'roll': rotation[2]},
-                    #filters={'yaw': 'coordinate', 'pitch': 'coordinate', 'roll': 'coordinate'})
-
+            if self.rotation_enabled:
+                send_long_command('object_rotate', {'yaw': rotation[0], 'pitch': rotation[1], 'roll': rotation[2]},
+                        filters={'yaw': 'coordinate', 'pitch': 'coordinate', 'roll': 'coordinate'})
 
         # Ungrab
         if is_grabbing and len(fingers) >= self.min_nb_fingers:
@@ -82,11 +86,11 @@ class GrabListener(Leap.Listener):
             less_fingers = self.fingers_history[-1] == 0
             less_fingers = less_fingers and self.fingers_history[-1] < self.fingers_history[0]
 
-            for i in range(1, len(self.fingers_history)):
+            for i in xrange(1, len(self.fingers_history)):
                 if self.fingers_history[i - 1] < self.fingers_history[i]:
                     less_fingers = False
 
-            del self.fingers_history[:]
+            self.fingers_history = []
 
             if less_fingers:
                 self.fingers_history = None
@@ -94,9 +98,7 @@ class GrabListener(Leap.Listener):
         return less_fingers
 
     def begin_grab(self, hand):
-        #print('Grab')
         self.hand_origin = hand.stabilized_palm_position
-        #print(hand.stabilized_palm_position)
 
         global is_grabbing
         is_grabbing = True
@@ -113,7 +115,6 @@ class GrabListener(Leap.Listener):
         send_command('object_rotate_origin', {'yaw': yaw, 'pitch': pitch, 'roll': roll})
 
     def end_grab(self):
-        #print('Ungrab')
         send_command('object_move_end', {})
         global is_grabbing
         is_grabbing = False
@@ -127,13 +128,9 @@ class ScaleListener(Leap.Listener):
     during the gesture.
     Detecting at least a finger cancels the movement.
     """
-    def __init__(self, threshold = 5, history_size = 10):
+    def __init__(self, threshold=5, history_size=10):
         Leap.Listener.__init__(self)
-
         self.history = []
-        self._isScaling = False
-        self._initialFactor = 0
-
         self.history_size = history_size
         self.threshold = threshold
 
@@ -144,70 +141,51 @@ class ScaleListener(Leap.Listener):
         # Need at least two hands for this gesture
         # and can't scale when grabbing
         if len(frame.hands) < 2 or is_grabbing:
-            del self.history[:]
+            self.stop_scaling()
             return
 
-        hand1 = frame.hands[0]
-        hand2 = frame.hands[1]
+        # Get first two hands
+        hand1, hand2 = frame.hands[:2]
 
         # No (or few) fingers must be visible
         if len(hand1.fingers) + len(hand2.fingers) > 1:
-            self._isScaling = False
-            del self.history[:]
+            self.stop_scaling()
             return
 
         # Distance between the two hands
-        displacement = hand1.stabilized_palm_position - hand2.stabilized_palm_position
-        mag = displacement.magnitude
+        dis = hand1.stabilized_palm_position - hand2.stabilized_palm_position
+        mag = dis.magnitude
 
-        # Should we activate the gesture?
-        if not self._isScaling:
-            self.history.append(displacement)
+        # Scale when scaling (duh)
+        if is_scaling:
+            send_long_command('object_scale', { 'sx': mag, 'sy': mag, 'sz': mag },
+                filters={'sx': 'coordinate', 'sy': 'coordinate', 'sz': 'coordinate'})
+            return
 
-            # Limit history length to history_size
-            if len(self.history) > self.history_size:
-                self.history = self.history[:-len(self.history)]
+        # Start scaling only if hands move apart enough
+        if abs(mag - self.history[-1]) >= self.threshold:
+            self.start_scaling(mag)
+        self.history.append(mag)
 
-            # Start scaling if hands move apart enough
-            # (must happen between history_size frames)
-            variation = 0
-            for i in range(1, len(self.history)):
-                variation = self.history[i].magnitude - self.history[i-1].magnitude
+        # Limit history length to history_size
+        if len(self.history) > self.history_size:
+            self.history = self.history[-self.history_size:]
 
-            if abs(variation) >= self.threshold:
-                self.startScaling(mag)
+    def start_scaling(self, magnitude):
+        global is_scaling
+        is_scaling = True
 
-            # Limit history length to history_size
-            n = len(self.history)
-            if n > self.history_size:
-                n -= self.history_size
-                self.history = self.history[n:]
-
-        # Send the scaling command
-        else:
-            # Scale back the magnitude between 0 and 1 (make smaller) or > 1 (make bigger)
-            self.sendNewScalingFactor(mag / self._initialFactor)
-
-    def startScaling(self, currentMagnitude):
-        self._initialFactor = currentMagnitude
-        self._isScaling = True
         # Clear history (it is not needed when movement is activated)
-        del self.history[:]
+        self.history = []
 
         send_command('object_scale_origin', {})
-        #print('Starting to scale object')
 
-    def sendNewScalingFactor(self, factor):
-        send_long_command('object_scale', {
-            'sx': factor,
-            'sy': factor,
-            'sz': factor
-            },
-            filters={'sx': 'coordinate', 'sy': 'coordinate', 'sz': 'coordinate'}
-        )
-        #print('Scaling object of factor {}'.format(factor))
+    def stop_scaling(self):
+        global is_scaling
+        is_scaling = False
+        self.history = []
 
-class CalmGestureListener(Leap.Listener):
+class StopListener(Leap.Listener):
     """
     The "calm down" gesture is activated when a fully opened hand is lowered.
     """
@@ -226,21 +204,22 @@ class CalmGestureListener(Leap.Listener):
 
         # Need exactly one hand for this gesture
         if len(frame.hands) is not 1:
-            del self.history[:]
+            self.history = []
             return
 
         hand = frame.hands[0]
 
         # About five fingers must be visible
         if len(hand.fingers) < 4:
-            del self.history[:]
+            self.history = []
             return
         altitude = hand.stabilized_palm_position.y
-
         self.history.append(altitude)
+
         # Limit history size
         if len(self.history) > self.history_size:
-            self.history[:-self.history_size]
+            self.history = self.history[-self.history_size:]
+
         # Hand must not be going up
         elif len(self.history) >= 2:
             if self.history[-2] < self.history[-1]:
@@ -248,25 +227,24 @@ class CalmGestureListener(Leap.Listener):
 
         # Activate the gesture if there's enough vertical change
         variation = 0
-        for i in range(1, len(self.history)):
+        for i in xrange(1, len(self.history)):
             variation += self.history[i] - self.history[i-1]
         if -variation >= self.threshold:
-            self.activateGesture()
+            self.stop()
 
-    def activateGesture(self):
-        del self.history[:]
+    def stop(self):
+        self.history = []
         send_command('stop_rotation')
-        #print('Setting rotation speed to 0')
 
-class FingersListener(Leap.Listener):
+class PointersListener(Leap.Listener):
     """
     This gesture is intended for sculpt mode.
     Each finger could potentially send "pressure" commands.
     """
-    def __init__(self, threshold = 1, lengthThreshold = 10, history_size = 30):
+    def __init__(self, threshold=1, length_threshold=10, history_size=30):
         Leap.Listener.__init__(self)
         self.threshold = threshold
-        self.lengthThreshold = lengthThreshold
+        self.length_threshold = length_threshold
         self.history_size = history_size
 
     def on_frame(self, controller):
@@ -277,75 +255,23 @@ class FingersListener(Leap.Listener):
         if not frame.hands:
             return
         # And three fingers at most
-        nFingers = 0
-        for hand in frame.hands:
-            nFingers += len(hand.fingers)
-        if nFingers > 2 or nFingers < 1:
+        nb_fingers = sum(len(hand.fingers) for hand in frame.hands)
+        if nb_fingers > 2 or nb_fingers < 1:
             return
 
+        # TODO itertools.chain <3
         for hand in frame.hands:
             for finger in hand.fingers:
+
                 # Each finger must be present for some time before being able to paint
                 # and have a minimum length
-                if finger.time_visible > self.threshold and finger.length > self.lengthThreshold:
-                    self.activateGesture(finger.stabilized_tip_position, finger.direction)
+                if finger.time_visible > self.threshold \
+                        and finger.length > self.length_threshold:
+                    self.point_finger(finger.stabilized_tip_position,
+                                      finger.direction)
 
-    def activateGesture(self, tip, direction):
-        # TODO: rescale coordinates, center them at user-confortable origin
+    def point_finger(self, tip, direction):
+        # TODO send as long command ?
         tip = rescale_position(tip)
-
-        send_command('finger_touch', {
-            'x': tip.z, 'y': tip.x, 'z': tip.y,
-            'vx': direction.z, 'vy': direction.x, 'vz': direction.y
-        })
-#        print('Sending sculpt command pointing at ({}, {}, {})'.format(tip.z, tip.x, tip.y))
-
-class ColorListener(Leap.Listener):
-    """
-    This listener is intended for painting mode.
-    It can change the color according to position of the hand with all five fingers opened
-    """
-    def __init__(self, threshold = 1, lengthThreshold = 10, history_size = 30):
-        Leap.Listener.__init__(self)
-        self.threshold = threshold
-        self.lengthThreshold = lengthThreshold
-        self.history_size = history_size
-        self.history = []
-
-    def on_frame(self, controller):
-        # Get the most recent frame
-        frame = controller.frame()
-
-        # Need exactly one hand for this gesture
-        if len(frame.hands) is not 1:
-            del self.history[:]
-            return
-
-        hand = frame.hands[0]
-
-        # About five fingers must be visible
-        if len(hand.fingers) < 4:
-            del self.history[:]
-            return
-
-        self.history.append(hand.stabilized_palm_position)
-        # Limit history size
-        if len(self.history) > self.history_size:
-            self.history[:-self.history_size]
-
-        # Activate the gesture if there's enough change
-        variation = Leap.Vector()
-        for i in range(1, len(self.history)):
-            variation += self.history[i] - self.history[i-1]
-        if variation.magnitude >= self.threshold:
-            self.change_color(hand.stabilized_palm_position)
-
-    def change_color(self, position):
-        r, g, b = to_color(position)
-        r, g, b = min(1, r), min(1, g), min(1, b)
-
-        send_long_command('paint_color',
-            {'r': r, 'g': g, 'b': b},
-            filters={'r': 'coordinate', 'g': 'coordinate', 'b': 'coordinate'}
-        )
-
+        send_command('finger_touch', { 'x': tip.z, 'y': tip.x, 'z': tip.y,
+            'vx': direction.z, 'vy': direction.x, 'vz': direction.y })
