@@ -25,8 +25,7 @@ def send_command(name, data={}):
     function's kwargs.
     """
     global clients
-    # with _lock:
-    if True:
+    with _lock:
         data['__cmd__'] = name
         if debug:
             print 'Sending:', pformat(data)
@@ -58,9 +57,6 @@ def send_long_command(name, data, filters=None):
     if filters is None:
         filters = {}
 
-    # Short circuit: no filter.
-    #return send_command(name, data)
-
     changed = False
     for arg, filter_key in filters.iteritems():
         _filters.setdefault(name, {})
@@ -70,7 +66,6 @@ def send_long_command(name, data, filters=None):
         new_value, interesting = cmd_filters[arg].apply(data[arg])
         if not interesting:
             continue
-
         data[arg] = new_value
         changed = True
 

@@ -12,6 +12,7 @@ Options:
 import os, sys
 import socket
 import threading
+import logging
 
 # leap python binding
 this_dir = os.path.dirname(os.path.realpath(__name__))
@@ -30,14 +31,14 @@ except ImportError:
     vr_available = False
 
 def run_server():
-    print 'Started: Ctrl-C or command \'exit\' to kill.\n'
+    print 'Server started: Ctrl-C to kill'
     try:
         while True:
             pipe, _ = sock.accept()
             pipe.settimeout(0.05)
             com.clients.append(pipe)
     except KeyboardInterrupt:
-        pass
+        print 'interrupted'
 
 def cleanup_server():
     disable_current_controller()
@@ -51,7 +52,9 @@ if __name__ == '__main__':
         sys.exit(0)
 
     # debugging
-    com.debug = '--debug' in sys.argv
+    if '--debug' in sys.argv:
+        com.debug = True
+        # TODO set log level to logging.DEBUG
 
     # setup server
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -72,16 +75,20 @@ if __name__ == '__main__':
         try:
             t.start()
             try:
-                cmd = ''
-                while not 'exit' == cmd:
-                    cmd = raw_input('Command? ').strip()
+                exit_cmd = 'exit'
+                print 'Kill server and exit with "%s"' % exit_cmd
+                while True:
+                    cmd = raw_input('(speak) ').strip().lower()
                     if not cmd:
                         pass
-                    interpret_command(cmd)
+                    elif cmd == exit_cmd:
+                        break
+                    else:
+                        interpret_command(cmd)
             except EOFError:
                 pass
         except Exception as e:
-            print 'exception:', str(e)
+            logging.exception(e)
         finally:
             cleanup_server()
     else:

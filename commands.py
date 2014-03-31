@@ -1,53 +1,53 @@
+import logging
 from functools import partial
 from communication import send_command
 from controllers import set_current_controller
 
 def view_from(direction):
-    print 'viewing from:', direction
+    logging.debug('viewing from %s' % direction)
     send_command('view_%s' % direction)
 
+# mapping of mode to mode changing command (falsy: keep current)
 _mode_mapping = {
         'sculpt': 'sculpt',
-        'pottery': 'pottery',
-        'texture_paint': 'paint',
+        'pottery': 'sculpt',
+        'paint': 'texture_paint',
         'object': 'object',
         }
 def enter_mode(mode):
-    print 'entering mode:', mode
+    logging.debug('entering mode: %s' % mode)
     if mode not in _mode_mapping:
-        print 'COMMENT T\'ES TROP NUL', mode
-    if mode == 'pottery':
-        send_command('mode_sculpt')
-    else:
-        send_command('mode_%s' % mode)
-    set_current_controller(_mode_mapping[mode])
+        logging.error('unrecognized mode %s' % mode)
+    mode_command = _mode_mapping[mode]
+    if mode_command:
+        send_command('mode_%s' % mode_command)
+    set_current_controller(mode)
 
+# mapping of command word to callable
 _cmd_mapping = {
-            'reset': partial(send_command, 'object_reset_everything'),
-            'center': partial(send_command, 'object_center'),
-            'render': partial(send_command, 'render'),
-            'above': partial(view_from, 'top'), 'over': partial(view_from, 'top'),
-            'below': partial(view_from, 'bottom'), 'under': partial(view_from, 'bottom'),
-            'camera': partial(view_from, 'camera'),
-            'front': partial(view_from, 'front'),
-            'back': partial(view_from, 'back'),
-            'left': partial(view_from, 'left'),
-            'right': partial(view_from, 'right'),
-            'sculpt': partial(enter_mode, 'sculpt'),
-            'paint': partial(enter_mode, 'texture_paint'),
-            'pottery': partial(enter_mode, 'pottery'),
-            'object': partial(enter_mode, 'object'),
-            'add': partial(send_command, 'sculpt_add'),
-            'substract': partial(send_command, 'sculpt_subtract'),
-            'noob': partial(send_command, 'toggle_noob'),
-            'exit': None,
+            'above':      partial(view_from,     'top'),
+            'add':        partial(send_command,  'sculpt_add'),
+            'back':       partial(view_from,     'back'),
+            'below':      partial(view_from,     'bottom'),
+            'camera':     partial(view_from,     'camera'),
+            'center':     partial(send_command,  'object_center'),
+            'front':      partial(view_from,     'front'),
+            'left':       partial(view_from,     'left'),
+            'noob':       partial(send_command,  'toggle_noob'),
+            'object':     partial(enter_mode,    'object'),
+            'over':       partial(view_from,     'top'),
+            'paint':      partial(enter_mode,    'paint'),
+            'pottery':    partial(enter_mode,    'pottery'),
+            'render':     partial(send_command,  'render'),
+            'reset':      partial(send_command,  'object_reset_everything'),
+            'right':      partial(view_from,     'right'),
+            'sculpt':     partial(enter_mode,    'sculpt'),
+            'substract':  partial(send_command,  'sculpt_subtract'),
+            'under':      partial(view_from,     'bottom'),
             }
 
 def interpret_command(cmd):
     if cmd not in _cmd_mapping:
-        print "T'es trop nul, ta commande elle est naze", cmd
+        logging.debug('unrecognized command %s' % cmd)
         return
-
-    if _cmd_mapping[cmd] is not None:
-        return _cmd_mapping[cmd]()
-    return cmd
+    _cmd_mapping[cmd]()
