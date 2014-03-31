@@ -1,7 +1,11 @@
 import random
 
 class Filter(object):
-    """Automatic filtering based on history: if there's not enough change, no need to send the command"""
+    """
+    Automatic filtering based on history: if there's not enough change, no need
+    to send the command.
+    TODO actually, you do need to send the command.
+    """
 
     def __init__(self, window_length=5, threshold=0.01):
         super(Filter, self).__init__()
@@ -59,7 +63,6 @@ class CompositeFilter(object):
                 interesting = True
 
         return result, interesting
-
 
 if __name__ == '__main__':
     leFilter = CompositeFilter(3)
