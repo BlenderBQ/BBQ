@@ -49,5 +49,8 @@ _cmd_mapping = {
 def interpret_command(cmd):
     if cmd not in _cmd_mapping:
         logging.debug('unrecognized command %s' % cmd)
-        return
-    _cmd_mapping[cmd]()
+        return False
+    retval =  _cmd_mapping[cmd]()
+    if retval is not None:
+        return retval
+    return True

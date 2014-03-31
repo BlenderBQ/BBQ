@@ -69,7 +69,7 @@ if __name__ == '__main__':
     # default mode
     set_current_controller('object')
 
-    if '--interactive' in sys.argv:
+    if '-i' in sys.argv or '--interactive' in sys.argv:
         t = threading.Thread(target=run_server)
         t.daemon = True
         try:
@@ -83,9 +83,12 @@ if __name__ == '__main__':
                         pass
                     elif cmd == exit_cmd:
                         break
-                    else:
-                        interpret_command(cmd)
+
+                    if not interpret_command(cmd):
+                        print 'bad unrecognized command "%s"' % cmd
             except EOFError:
+                print 'EOF'
+            except KeyboardInterrupt:
                 pass
         except Exception as e:
             logging.exception(e)
