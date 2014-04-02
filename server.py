@@ -19,9 +19,10 @@ this_dir = os.path.dirname(os.path.realpath(__name__))
 sys.path.insert(0, os.path.join(this_dir, 'libs', 'leap'))
 import Leap
 
-from controllers import set_current_controller, disable_current_controller
 import communication as com
 from commands import interpret_command
+from controllers import set_current_controller, disable_current_controller
+from controllers import default
 
 # Mac not-imports
 try:

@@ -16,17 +16,21 @@ class Controller(object):
         for gesture in gestures:
             gesture.controller = self
 
-        # members
-        lstn = Leap.Listener()
         self.lock = Lock()
-        self.listener = lstn
         self.gestures = dict(zip(map(lambda cls: cls.__name__, gestures_clss), gestures))
         self.gesture_activated = {}
 
-        # setup leap listener
-        lstn.on_init = lambda _, c: self.controller_bind(self.init)(c)
-        lstn.on_exit = lambda _, c: self.controller_bind(self.exit)(c)
-        lstn.on_frame = lambda _, c: self.controller_bind(self.frame)(c)
+        # custom leap listener
+        class _Listener(Leap.Listener):
+            def on_init(_, controller):
+                return self.controller_bind(self.init)(controller)
+
+            def on_exit(_, controller):
+                return self.controller_bind(self.exit)(controller)
+
+            def on_frame(_, controller):
+                return self.controller_bind(self.frame)(controller)
+        self.listener = _Listener()
 
     def add_gesture(self, gesture_cls):
         """
@@ -234,5 +238,3 @@ def make_controller(*gestures):
         defined_controllers[f.__name__] = binding.factory
         return binding
     return decorator
-
-from controllers import default
