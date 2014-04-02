@@ -34,5 +34,7 @@ nosetests.xml
 .mr.developer.cfg
 .project
 .pydevproject
+
+# Unused resources
 *.blend1
 *.data
