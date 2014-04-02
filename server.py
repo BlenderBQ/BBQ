@@ -22,7 +22,7 @@ import Leap
 import communication as com
 from commands import interpret_command
 from controllers import set_current_controller, disable_current_controller
-from controllers import default
+from controllers.default import ObjectController
 
 # Mac not-imports
 try:
@@ -68,7 +68,7 @@ if __name__ == '__main__':
         vr.start()
 
     # default mode
-    set_current_controller('default')
+    set_current_controller(ObjectController)
 
     if '-i' in sys.argv or '--interactive' in sys.argv:
         t = threading.Thread(target=run_server)

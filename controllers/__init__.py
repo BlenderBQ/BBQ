@@ -13,8 +13,6 @@ class Controller(object):
         if gestures_clss is None:
             gestures_clss = []
         gestures = [g_cls() for g_cls in gestures_clss]
-        for gesture in gestures:
-            gesture.controller = self
 
         self.lock = Lock()
         self.gestures = dict(zip(map(lambda cls: cls.__name__, gestures_clss), gestures))
@@ -76,9 +74,9 @@ class Controller(object):
 
             # fire callbacks
             if gesture_is_activated and not gesture_was_activated:
-                gesture.do_activated()
+                gesture.do_change(True)
             elif gesture_was_activated and not gesture_is_activated:
-                gesture.do_deactivated()
+                gesture.do_change(False)
 
         # actual update
         self.update()
@@ -87,7 +85,7 @@ class Controller(object):
         """
         Return if the passed gesture is currently active.
         """
-        return gesture_name in self.gesture_activated
+        return self.gesture_activated.get(gesture_name, False)
 
     def enter(self):
         """
@@ -116,26 +114,22 @@ class Gesture(object):
     """
     def __init__(self):
         self.observers = []
-        self.controller = None
+        self.is_activated = False
 
-    def notify_change(self, actived):
+    def do_change(self, activated):
+        self.is_activated = activated
+        self.on_change()
+        self.notify_change()
+
+    def notify_change(self):
         for obs in self.observers:
-            obs(actived)
+            obs(self.is_activated)
 
-    def do_activated(self):
-        self.on_activated()
-        self.notify_change(True)
-
-    def do_deactivated(self):
-        self.on_deactivated()
-        self.notify_change(False)
-
-    @property
-    def is_actived(self):
+    def on_change(self):
         """
-        Return if the gesture is currently activated.
+        Called when a gesture is deactivated.
         """
-        return self.controller.gesture_is_activated(self.__class__.__name__)
+        pass
 
     def setup(self):
         """
@@ -155,18 +149,6 @@ class Gesture(object):
         gesture should be detected or not.
         """
         return False
-
-    def on_activated(self):
-        """
-        Called when a gesture is activated.
-        """
-        pass
-
-    def on_deactivated(self):
-        """
-        Called when a gesture is deactivated.
-        """
-        pass
 
 _leap_controller = Leap.Controller()
 _current_controller = None
@@ -193,48 +175,3 @@ def set_current_controller(ctrl):
     _current_controller = ctrl()
     _current_controller.enter()
     _leap_controller.add_listener(_current_controller.listener)
-
-class ControllerBinding(object):
-    def __init__(self, update, gestures=None, ctrl_cls=Controller):
-        if gestures is None:
-            gestures = []
-
-        # controller class binding
-        self.ctrl_cls = ctrl_cls
-        self.gestures = gestures
-
-        # bound callbacks
-        self.update = update
-        self._enter = None
-        self._leave = None
-
-    def factory(self):
-        ctrl = self.ctrl_cls(self.gestures)
-        ctrl.enter = lambda: self.do_enter(ctrl)
-        ctrl.leave = lambda: self.do_leave(ctrl)
-        self.ctrl_cls.update = lambda: self.update(ctrl)
-        return ctrl
-
-    def do_enter(self, ctrl):
-        if self._enter is not None:
-            self._enter(ctrl)
-
-    def do_leave(self, ctrl):
-        if self._leave is not None:
-            self._leave(ctrl)
-
-    def on_enter(self, f):
-        self._enter = f
-
-    def on_leave(self, f):
-        self._leave = f
-
-def make_controller(*gestures):
-    """
-    Make a basic controller, retuning a decoratable object (similar to property)
-    """
-    def decorator(f):
-        binding = ControllerBinding(f, gestures)
-        defined_controllers[f.__name__] = binding.factory
-        return binding
-    return decorator

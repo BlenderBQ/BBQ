@@ -45,6 +45,6 @@ class GrabGesture(Gesture):
                 #print 'GRAB', self.nb_fingers.derivative
                 return True
 
-    def on_deactivated(self):
-        print 'deactivated'
-        self.nb_fingers.empty()
+    def on_change(self):
+        if not self.activated:
+            self.nb_fingers.empty()
