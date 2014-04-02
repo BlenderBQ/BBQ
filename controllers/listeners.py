@@ -37,9 +37,17 @@ class GrabListener(Leap.Listener):
             LowpassFilter(0.9)
             ])
 
-        self.pos_hand = MixedFilter([
-            NoiseFilter(10, 0.1, 20),
-            LowpassFilter(0.5)
+        self.x_hand = MixedFilter([
+            NoiseFilter(1000, 100, 20),
+            LowpassFilter(0.0)
+            ])
+        self.y_hand = MixedFilter([
+            NoiseFilter(1000, 100, 20),
+            LowpassFilter(0.0)
+            ])
+        self.z_hand = MixedFilter([
+            NoiseFilter(1000, 100, 20),
+            LowpassFilter(0.0)
             ])
 
     def on_init(self, controller):
@@ -54,7 +62,9 @@ class GrabListener(Leap.Listener):
         # print 'Nb hand :', self.nb_hands.value, len(frame.hands), self.nb_hands.derivative
         self.nb_hands.add_value(len(frame.hands))
         if not self.nb_hands.around(1, 0.1):
-            self.pos_hand.empty()
+            self.x_hand.empty()
+            self.y_hand.empty()
+            self.z_hand.empty()
             # self.nb_fingers.empty()
             if is_grabbing:
                 print 'UNGRAB'
@@ -68,14 +78,29 @@ class GrabListener(Leap.Listener):
         self.nb_fingers.add_value(len(fingers))
         # print 'Nb finger :', self.nb_fingers.value, self.nb_fingers.derivative
         if is_grabbing:
-            if not self.nb_fingers.around(0, 3.1):
+            pos = hand.stabilized_palm_position
+            self.x_hand.add_value(pos.x)
+            self.y_hand.add_value(pos.y)
+            self.z_hand.add_value(pos.z)
+
+            origin = self.hand_origin
+            dx = self.x_hand.value - origin.x
+            dy = self.y_hand.value - origin.y
+            dz = self.z_hand.value - origin.z
+
+            send_command('object_move', {'tx': dz, 'ty': dx, 'tz': dy})
+
+        if is_grabbing:
+            # if not self.nb_fingers.around(0, 2.9):
+            if self.nb_fingers.derivative > 0.015 \
+                    or self.nb_fingers.around(5, 1.5):
                 print 'UNGRAB', self.nb_fingers.value, time.time()
-                self.pos_hand.empty()
+                self.x_hand.empty()
+                self.y_hand.empty()
+                self.z_hand.empty()
                 self.nb_fingers.empty()
                 is_grabbing = False
                 self.end_grab()
-
-            self.pos_hand.add_value(0)
 
         if not is_grabbing:
             if self.nb_fingers.around(3.0, 0.2) \
@@ -84,8 +109,10 @@ class GrabListener(Leap.Listener):
                 print 'GRAB', self.nb_fingers.derivative
                 is_grabbing = True
                 self.begin_grab(hand)
+
             # else:
                 # print '####', self.nb_fingers.derivative
+
         return
 
         # if not is_grabbing:
