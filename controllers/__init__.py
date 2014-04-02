@@ -55,13 +55,21 @@ class Controller(object):
         with self.lock:
             # gesture detection
             for gesture_name, gesture in self.gestures.iteritems():
-                self.gesture_activated[gesture_name] = gesture.detect(frame)
+                gesture_was_activated = self.gesture_activated.get(gesture_name, False)
+                gesture_is_activated = gesture.detect(frame)
+                self.gesture_activated[gesture_name] = gesture_is_activated
+
+                # fire callbacks
+                if gesture_is_activated and not gesture_was_activated:
+                    gesture.do_activated()
+                elif gesture_was_activated and not gesture_is_activated:
+                    gesture.do_deactivated()
 
             # actual update
             self.current_frame = frame
             self.update(frame)
 
-    def gesture_is_active(self, gesture_name):
+    def gesture_is_activated(self, gesture_name):
         """
         Return if the passed gesture is currently active.
         """
@@ -88,9 +96,33 @@ class Controller(object):
 class Gesture(object):
     """
     Base gesture class, override any of the callback methods to setup detection
-    of this gesture.
+    of this gesture. Observers can be added using the observers list, which
+    should be a list of callables, taking the state of activation after it was
+    changed.
     """
-    def init(self):
+    def __init__(self):
+        self.observers = []
+
+    def notify_change(self, actived):
+        for obs in self.observers:
+            obs(active)
+
+    def do_activated(self):
+        self.on_activated()
+        self.notify_change(True)
+
+    def do_deactivated(self):
+        self.on_deactivated()
+        self.notify_change(False)
+
+    @property
+    def is_actived(self):
+        """
+        Return if the gesture is currently activated.
+        """
+        return self.controller.gesture_is_activated(self.__class__.__name__)
+
+    def setup(self):
         """
         Do any setup operations here.
         """
@@ -108,6 +140,18 @@ class Gesture(object):
         gesture should be detected or not.
         """
         return False
+
+    def on_activated(self):
+        """
+        Called when a gesture is activated.
+        """
+        pass
+
+    def on_deactivated(self):
+        """
+        Called when a gesture is deactivated.
+        """
+        pass
 
 _leap_controller = Leap.Controller()
 _current_controller = None
