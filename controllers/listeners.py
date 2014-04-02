@@ -39,15 +39,15 @@ class GrabListener(Leap.Listener):
 
         self.x_hand = MixedFilter([
             NoiseFilter(1000, 100, 20),
-            LowpassFilter(0.0)
+            LowpassFilter(0.05)
             ])
         self.y_hand = MixedFilter([
             NoiseFilter(1000, 100, 20),
-            LowpassFilter(0.0)
+            LowpassFilter(0.05)
             ])
         self.z_hand = MixedFilter([
             NoiseFilter(1000, 100, 20),
-            LowpassFilter(0.0)
+            LowpassFilter(0.05)
             ])
 
     def on_init(self, controller):
