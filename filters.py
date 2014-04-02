@@ -6,11 +6,19 @@ class BaseFilter(object):
     deviation for filter based on it.
     """
     def __init__(self, size):
-        super(Histo, self).__init__()
+        super(BaseFilter, self).__init__()
         self.size = size
         self.hist = []
         self.sum = 0
         self.sq_sum = 0
+
+    def empty(self):
+        self.hist = []
+        self.sum = 0
+        self.sq_sum = 0
+
+    def around(self, origin, distance):
+        return abs(self.value - origin) <= distance
 
     @property
     def avg(self):
@@ -23,6 +31,12 @@ class BaseFilter(object):
         if len(self.hist) == 0:
             return 0
         return (self.sq_sum - self.sum) * 1.0 / len(self.hist)
+
+    @property
+    def derivative(self):
+        if len(self.hist) == 0:
+            return 0
+        return (self.value - self.hist[0]) * 1.0 / 10
 
     @property
     def value(self):
@@ -41,8 +55,8 @@ class BaseFilter(object):
             self.hist = self.hist[1:]
 
 class LowpassFilter(BaseFilter):
-    def __init__(self, alpha, size):
-        BaseFilter.__init__(self, size)
+    def __init__(self, alpha):
+        BaseFilter.__init__(self, 2)
         self.alpha = alpha
 
     def add_value(self, value):
@@ -54,15 +68,16 @@ class LowpassFilter(BaseFilter):
         value and *1 - alpha* for the new.
         """
         if len(self.hist) < 2:
-            BaseFilter.add_value(value)
+            BaseFilter.add_value(self, value)
         else:
-            filtered_value = self.hist[-1] * alpha + value * (1.0 - alpha)
-            BaseFilter.add_value(filtered_value)
+            filtered_value = self.hist[-1] * self.alpha + value * (1.0 - self.alpha)
+            BaseFilter.add_value(self, filtered_value)
 
 class NoiseFilter(BaseFilter):
-    def __init__(self, deviation_scale, size):
+    def __init__(self, deviation_scale, deviation_offset, size):
         BaseFilter.__init__(self, size)
         self.deviation_scale = deviation_scale
+        self.deviation_offset = deviation_offset
 
     def add_value(self, value):
         """
@@ -73,10 +88,11 @@ class NoiseFilter(BaseFilter):
         then the value is filtered and the current average is added instead.
         Else, the new value is added.
         """
-        if (value - self.avg) ** 2 > self.deviation_scale * self.std:
-            BaseFilter.add_value(self.avg)
+        if (value - self.avg) ** 2 > \
+                self.deviation_scale * (self.std + self.deviation_offset):
+            BaseFilter.add_value(self, self.avg)
         else:
-            BaseFilter.add_value(value)
+            BaseFilter.add_value(self, value)
 
 class MixedFilter(object):
     """
@@ -90,6 +106,13 @@ class MixedFilter(object):
         assert len(filters) != 0 # Happy JM ?
         self.filters = filters
 
+    def empty(self):
+        for f in self.filters:
+            f.empty()
+
+    def around(self, origin, distance):
+        return self.filters[-1].around(origin, distance)
+
     @property
     def avg(self):
         return self.filters[-1].avg
@@ -99,12 +122,17 @@ class MixedFilter(object):
         return self.filters[-1].std
 
     @property
+    def derivative(self):
+        return self.filters[-1].derivative
+
+    @property
     def value(self):
         return self.filters[-1].value
 
     def add_value(self, value):
         for f in self.filters:
-            value = f.add_value(value)
+            f.add_value(value)
+            value = f.value
 
 class Filter(object):
     """
