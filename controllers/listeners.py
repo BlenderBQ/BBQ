@@ -29,17 +29,17 @@ class GrabListener(Leap.Listener):
 
         self.nb_hands = MixedFilter([
             NoiseFilter(10, 0.3, 10),
-            LowpassFilter(0.6)
+            LowpassFilter(0.5)
             ])
 
         self.nb_fingers = MixedFilter([
             NoiseFilter(100, 0.3, 10),
-            LowpassFilter(0.4)
+            LowpassFilter(0.9)
             ])
 
         self.pos_hand = MixedFilter([
             NoiseFilter(10, 0.1, 20),
-            LowpassFilter(0.4)
+            LowpassFilter(0.5)
             ])
 
     def on_init(self, controller):
@@ -68,20 +68,24 @@ class GrabListener(Leap.Listener):
         self.nb_fingers.add_value(len(fingers))
         # print 'Nb finger :', self.nb_fingers.value, self.nb_fingers.derivative
         if is_grabbing:
-            if not self.nb_fingers.around(0, 0.4):
+            if not self.nb_fingers.around(0, 3.1):
+                print 'UNGRAB', self.nb_fingers.value, time.time()
                 self.pos_hand.empty()
                 self.nb_fingers.empty()
                 is_grabbing = False
-                # print 'UNGRAB'
-                # self.end_grab()
+                self.end_grab()
 
             self.pos_hand.add_value(0)
-        if True:
-            if self.nb_fingers.around(0, 0.5) \
+
+        if not is_grabbing:
+            if self.nb_fingers.around(3.0, 0.2) \
                     and self.nb_fingers.derivative < -0.015:
+                # print 'X', self.nb_fingers.value
                 print 'GRAB', self.nb_fingers.derivative
                 is_grabbing = True
-                # self.begin_grab(hand)
+                self.begin_grab(hand)
+            # else:
+                # print '####', self.nb_fingers.derivative
         return
 
         # if not is_grabbing:
