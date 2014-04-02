@@ -2,6 +2,8 @@ import math
 import Leap
 from communication import send_command, send_long_command
 from leaputils import rescale_position
+from filters import *
+import time
 
 # first real hack
 is_grabbing = False
@@ -25,13 +27,65 @@ class GrabListener(Leap.Listener):
         self.fingers_history = []
         self.hand_origin = None
 
+        self.nb_hands = MixedFilter([
+            NoiseFilter(10, 0.3, 10),
+            LowpassFilter(0.6)
+            ])
+
+        self.nb_fingers = MixedFilter([
+            NoiseFilter(100, 0.3, 10),
+            LowpassFilter(0.4)
+            ])
+
+        self.pos_hand = MixedFilter([
+            NoiseFilter(10, 0.1, 20),
+            LowpassFilter(0.4)
+            ])
+
     def on_init(self, controller):
         global is_grabbing
         is_grabbing = False
 
     def on_frame(self, controller):
+        global is_grabbing
         # Get the most recent frame
         frame = controller.frame()
+
+        # print 'Nb hand :', self.nb_hands.value, len(frame.hands), self.nb_hands.derivative
+        self.nb_hands.add_value(len(frame.hands))
+        if not self.nb_hands.around(1, 0.1):
+            self.pos_hand.empty()
+            # self.nb_fingers.empty()
+            if is_grabbing:
+                print 'UNGRAB'
+                is_grabbing = False
+                # self.end_grab()
+            return
+
+        hand = frame.hands[0]
+        fingers = hand.fingers
+
+        self.nb_fingers.add_value(len(fingers))
+        # print 'Nb finger :', self.nb_fingers.value, self.nb_fingers.derivative
+        if is_grabbing:
+            if not self.nb_fingers.around(0, 0.4):
+                self.pos_hand.empty()
+                self.nb_fingers.empty()
+                is_grabbing = False
+                # print 'UNGRAB'
+                # self.end_grab()
+
+            self.pos_hand.add_value(0)
+        if True:
+            if self.nb_fingers.around(0, 0.5) \
+                    and self.nb_fingers.derivative < -0.015:
+                print 'GRAB', self.nb_fingers.derivative
+                is_grabbing = True
+                # self.begin_grab(hand)
+        return
+
+        # if not is_grabbing:
+
 
         # Getting only one hand
         if len(frame.hands) is not 1:
