@@ -67,7 +67,7 @@ if __name__ == '__main__':
         vr.start()
 
     # default mode
-    set_current_controller('object')
+    set_current_controller('default')
 
     if '-i' in sys.argv or '--interactive' in sys.argv:
         t = threading.Thread(target=run_server)

@@ -1,6 +1,7 @@
 from communication import send_command
 from controllers import make_controller
 from gestures import GrabGesture
+from filters import *
 
 @make_controller(GrabGesture)
 def default(ctrl):
@@ -32,7 +33,7 @@ def default(ctrl):
         rz = ctrl.rot_z_hand.value - ctrl.rot_z_origin
         send_command('object_rotate', { 'rot_x': rx, 'rot_y': ry, 'rot_z': rz})
 
-@default.enter
+@default.on_enter
 def default_enter(ctrl):
     # hand location
     ctrl.loc_x_hand = MixedFilter([ NoiseFilter(1000, 100, 20), LowpassFilter(0.05) ])
@@ -71,7 +72,7 @@ def default_enter(ctrl):
             #'rot_y': self.rot_y_origin, 'rot_z': self.rot_z_origin})
     ctrl.gestures['GrabGesture'].observers.append(begin_grab)
 
-@default.leave
+@default.on_leave
 def default_leave(ctrl):
     if ctrl.gesture_is_activated(GrabGesture):
         send_command('object_move_end', {})

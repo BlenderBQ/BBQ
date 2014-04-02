@@ -1,4 +1,5 @@
 from controllers import Gesture
+from filters import *
 
 # FIXME wtf ?
 NOTHING = 0x00
