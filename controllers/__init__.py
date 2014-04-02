@@ -105,7 +105,7 @@ class Gesture(object):
 
     def notify_change(self, actived):
         for obs in self.observers:
-            obs(active)
+            obs(actived)
 
     def do_activated(self):
         self.on_activated()
@@ -186,9 +186,9 @@ class ControllerBinding(object):
 
         # controller class binding
         self.ctrl_cls = ctrl_cls
-        self.ctrl_cls.enter = lambda ctrl: self.do_enter(ctrl)
-        self.ctrl_cls.leave = lambda ctrl: self.do_leave(ctrl)
-        self.ctrl_cls.update = lambda ctrl: self.update(ctrl)
+        self.ctrl_cls.enter = self.do_enter
+        self.ctrl_cls.leave = self.do_leave
+        self.ctrl_cls.update = self.update
         self.gestures = gestures
 
         # bound callbacks
@@ -196,7 +196,7 @@ class ControllerBinding(object):
         self._enter = None
         self._leave = None
 
-    def build_controller(self):
+    def factory(self):
         return self.ctrl_cls(self.gestures)
 
     def do_enter(self, ctrl):
@@ -219,6 +219,6 @@ def make_controller(*gestures):
     """
     def decorator(f):
         binding = ControllerBinding(f, gestures)
-        defined_controllers[f.__name__] = lambda: binding.build_controller()
+        defined_controllers[f.__name__] = binding.factory
         return binding
     return decorator
