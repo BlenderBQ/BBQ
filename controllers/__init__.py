@@ -20,7 +20,7 @@ class Controller(object):
         lstn = Leap.Listener()
         lstn.on_init = lambda _: map(lambda g: g.setup(), self.gestures)
         lstn.on_exit = lambda _: map(lambda g: g.cleanup(), self.gestures)
-        lstn.on_init = lambda c: self.frame(c.frame())
+        lstn.on_frame = lambda c: self.frame(c)
 
         # members
         self.lock = Lock()
@@ -48,15 +48,19 @@ class Controller(object):
                 raise ValueError('Gesture not added')
             del self.gestures[gesture_name]
 
-    def frame(self, frame):
+    def frame(self, controller):
         """
         Called on a frame, taking care of gestures and calling update().
         """
         with self.lock:
+            # memorize controller
+            self.current_controller = controller
+            self.current_frame = controller.frame()
+
             # gesture detection
             for gesture_name, gesture in self.gestures.iteritems():
                 gesture_was_activated = self.gesture_activated.get(gesture_name, False)
-                gesture_is_activated = gesture.detect(frame)
+                gesture_is_activated = gesture.detect(controller)
                 self.gesture_activated[gesture_name] = gesture_is_activated
 
                 # fire callbacks
@@ -66,8 +70,7 @@ class Controller(object):
                     gesture.do_deactivated()
 
             # actual update
-            self.current_frame = frame
-            self.update(frame)
+            self.update()
 
     def gesture_is_activated(self, gesture_name):
         """
@@ -87,7 +90,7 @@ class Controller(object):
         """
         pass
 
-    def update(self, frame):
+    def update(self):
         """
         Implement updating logic here.
         """
@@ -102,6 +105,7 @@ class Gesture(object):
     """
     def __init__(self):
         self.observers = []
+        self.controller = None
 
     def notify_change(self, actived):
         for obs in self.observers:
@@ -134,7 +138,7 @@ class Gesture(object):
         """
         pass
 
-    def detect(self, frame):
+    def detect(self, controller):
         """
         Detect the gesture, returning a truthy/falsy indicating wether the
         gesture should be detected or not.
@@ -188,7 +192,6 @@ class ControllerBinding(object):
         self.ctrl_cls = ctrl_cls
         self.ctrl_cls.enter = self.do_enter
         self.ctrl_cls.leave = self.do_leave
-        self.ctrl_cls.update = self.update
         self.gestures = gestures
 
         # bound callbacks
@@ -197,7 +200,9 @@ class ControllerBinding(object):
         self._leave = None
 
     def factory(self):
-        return self.ctrl_cls(self.gestures)
+        ctrl = self.ctrl_cls(self.gestures)
+        self.ctrl_cls.update = lambda: self.update(ctrl)
+        return ctrl
 
     def do_enter(self, ctrl):
         if self._enter is not None:
