@@ -70,14 +70,16 @@ class GrabListener(Leap.Listener):
         hand = frame.hands[0]
         fingers = hand.fingers
 
+        pos = hand.stabilized_palm_position
+        self.x_hand.add_value(pos.x)
+        self.y_hand.add_value(pos.y)
+        self.z_hand.add_value(pos.z)
+
+        # print 'INFO', self.nb_fingers.value, self.nb_fingers.derivative, self.x_hand.value, self.y_hand.value, self.z_hand.value
+
         self.nb_fingers.add_value(len(fingers))
         # print 'Nb finger :', self.nb_fingers.value, self.nb_fingers.derivative
         if self.is_grabbing():
-            pos = hand.stabilized_palm_position
-            self.x_hand.add_value(pos.x)
-            self.y_hand.add_value(pos.y)
-            self.z_hand.add_value(pos.z)
-
             origin = self.hand_origin
             dx = self.x_hand.value - origin.x
             dy = self.y_hand.value - origin.y
@@ -86,14 +88,15 @@ class GrabListener(Leap.Listener):
             send_command('object_move', {'tx': dz, 'ty': dx, 'tz': dy})
 
         if self.is_grabbing():
+            print 'FRAME'
             if self.nb_fingers.derivative > 0.015 \
                     or self.nb_fingers.around(5, 1.5):
-                print 'UNGRAB', self.nb_fingers.value, time.time()
+                print 'UNGRAB', self.nb_fingers.value, self.nb_fingers.derivative
                 self.end_grab()
 
         if not self.is_grabbing():
-            if self.nb_fingers.around(3.0, 0.2) \
-                    and self.nb_fingers.derivative < -0.015:
+            if self.nb_fingers.around(3.0, 0.5) \
+                    and self.nb_fingers.derivative < -0.012:
                 print 'GRAB', self.nb_fingers.derivative
                 self.begin_grab(hand)
 
@@ -113,9 +116,9 @@ class GrabListener(Leap.Listener):
         # send_command('object_rotate_origin', {'yaw': yaw, 'pitch': pitch, 'roll': roll})
 
     def end_grab(self):
-        self.x_hand.empty()
-        self.y_hand.empty()
-        self.z_hand.empty()
+        # self.x_hand.empty()
+        # self.y_hand.empty()
+        # self.z_hand.empty()
         self.nb_fingers.empty()
         self.hand_origin = None
         if self.is_grabbing():
