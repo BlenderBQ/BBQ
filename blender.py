@@ -42,11 +42,11 @@ class BBQOperator(bpy.types.Operator):
         self.transport = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         # self.transport.setblocking(False)
         self.sockfile = None
-        self.move_origin = 0, 0, 0
-        self.rotate_origin = 0, 0, 0
+        self.move_origin = mathutils.Vector((0, 0, 0))
+        self.rotate_origin = mathutils.Euler((0, 0, 0))
         self.moving = False
         self.move_lock = None
-        self.scale_origin = 1, 1, 1
+        self.scale_origin = mathutils.Vector((1, 1, 1))
         self.noob = False
 
         # rotation (pottery mode)
@@ -295,49 +295,43 @@ class BBQOperator(bpy.types.Operator):
     def view_camera(self):
         self.view_numpad('CAMERA')
 
-    def object_move_origin(self, **kwargs):
-        x, y, z = kwargs['loc_x'], kwargs['loc_y'], kwargs['loc_z']
+    def object_move_origin(self):
         self.move_origin = bpy.context.selected_objects[0].location.copy()
         self.moving = True
-        self.move_matrix_origin = bpy.context.area.spaces[0].region_3d.view_matrix
-        print('save', x, y, z)
+        self.move_matrix_origin = \
+                bpy.context.area.spaces[0].region_3d.view_matrix
 
     def object_move_end(self):
         self.moving = False
         self.move_lock = None
 
     def object_move(self, **kwargs):
-        tx, ty, tz = kwargs['loc_x'], kwargs['loc_y'], kwargs['loc_z']
-        x, y, z = 0, 0, 0 #self.move_origin
-        dx, dy, dz = tx + x, ty + y, tz + z
+        dx, dy, dz = kwargs['loc_x'], -kwargs['loc_z'], kwargs['loc_y']
         if self.move_lock == 'X':
-            dy, dz = y, z
+            dy, dz = 0, 0
         if self.move_lock == 'Y':
-            dx, dz = x, z
+            dx, dz = 0, 0
         if self.move_lock == 'Z':
-            dx, dy = x, y
-        print('tr', tx, ty, tz)
-        print('pos', dx, dy, dz)
+            dx, dy = 0, 0
         dx, dy, dz = map(blendPos, [dx, dy, dz])
-        # mat_trans = mathutils.Matrix.Translation((dx, dy, dz))
-        # loc = (self.move_matrix_origin * mat_trans).decompose()[0]
         for o in bpy.context.selected_objects:
-            # o.location = loc
-            o.location = self.move_origin + mathutils.Vector((dx, -dz, dy))
+            o.location = self.move_origin + mathutils.Vector((dx, dy, dz))
+            pass
 
-    def object_rotate_origin(self, **kwargs):
-        x, y, z = kwargs['rot_x'], kwargs['rot_y'], kwargs['rot_z']
-        self.rotate_origin = x, y, z
+    def object_rotate_origin(self):
+        self.rotate_origin = \
+                bpy.context.selected_objects[0].rotation_euler.copy()
 
     def object_rotate_end(self):
         pass
 
     def object_rotate(self, **kwargs):
-        ax, ay, az = kwargs['rot_x'], -kwargs['rot_y'], kwargs['rot_z']
-        x, y, z = self.rotate_origin
-        dx, dy, dz = ax + x, ay + y, az + z
+        dx, dy, dz = kwargs['rot_x'], -kwargs['rot_y'], kwargs['rot_z']
         for o in bpy.context.selected_objects:
-            o.rotation_euler = (dx, dy, dz)
+            pass
+            # o.rotation_euler.x = self.rotate_origin.x + dx
+            # o.rotation_euler.y = self.rotate_origin.y - dy
+            # o.rotation_euler.z = self.rotate_origin.z + dy
 
     def object_scale_origin(self):
         s = bpy.context.selected_objects[0].scale

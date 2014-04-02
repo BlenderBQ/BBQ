@@ -120,10 +120,10 @@ class GrabListener(Leap.Listener):
             rx = self.rot_x_hand.value - self.rot_x_origin
             ry = self.rot_y_hand.value - self.rot_y_origin
             rz = self.rot_z_hand.value - self.rot_z_origin
-            # send_command('object_rotate', {
-            #     'rot_x': rx,
-            #     'rot_y': ry,
-            #     'rot_z': rz})
+            send_command('object_rotate', {
+                'rot_x': rx,
+                'rot_y': ry,
+                'rot_z': rz})
 
         if self.is_grabbing():
             print 'FRAME'
@@ -146,19 +146,13 @@ class GrabListener(Leap.Listener):
         self.loc_x_origin = pos.x
         self.loc_y_origin = pos.y
         self.loc_z_origin = pos.z
-        send_command('object_move_origin', {
-            'loc_x': self.loc_x_origin,
-            'loc_y': self.loc_y_origin,
-            'loc_z': self.loc_z_origin})
+        send_command('object_move_origin', {})
 
         # Rotate origin
         self.rot_x_origin = hand.direction.pitch
         self.rot_y_origin = hand.direction.yaw
         self.rot_z_origin = hand.direction.roll
-        # send_command('object_rotate_origin', {
-        #     'rot_x': self.rot_x_origin,
-        #     'rot_y': self.rot_y_origin,
-        #     'rot_z': self.rot_z_origin})
+        send_command('object_rotate_origin', {})
 
     def end_grab(self):
         self.loc_x_hand.empty()
