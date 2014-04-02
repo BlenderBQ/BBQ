@@ -2,7 +2,7 @@ import math
 import Leap
 from communication import send_command, send_long_command
 from leaputils import rescale_position
-from filters import *
+from filters import (MixedFilter, NoiseFilter, LowpassFilter)
 import time
 
 # first real hack
