@@ -131,22 +131,24 @@ class ScaleListener(Leap.Listener):
     def __init__(self, threshold=5):
         Leap.Listener.__init__(self)
         self.threshold = threshold
+        self.last_mag = 0
 
     def on_frame(self, controller):
         frame = controller.frame()
+        global is_scaling
 
         # Need at least two hands for this gesture
         # and can't scale when grabbing
-        if len(frame.hands) < 2 or self.grabbing:
-            self.scaling = False
+        if len(frame.hands) < 2 or is_grabbing:
+            is_scaling = False
             return
 
         # Get first two hands
-        hand1, hand2 = frame.hands[:2]
+        hand1, hand2 = frame.hands[0], frame.hands[2]
 
         # No (or few) fingers must be visible
         if len(hand1.fingers) + len(hand2.fingers) > 1:
-            self.scaling = False
+            is_scaling = False
             return
 
         # Distance between the two hands
@@ -154,33 +156,15 @@ class ScaleListener(Leap.Listener):
         mag = dis.magnitude
 
         # Scale when scaling (duh)
-        if self.scaling:
+        if is_scaling:
             send_long_command('object_scale', { 'sx': mag, 'sy': mag, 'sz': mag },
                 filters={'sx': 'coordinate', 'sy': 'coordinate', 'sz': 'coordinate'})
-            return
 
         # Start scaling only if hands move apart enough
         if abs(mag - self.last_mag) >= self.threshold:
-            self.scaling = True
+            is_scaling = True
             send_command('object_scale_origin')
-
-    # The following properties are used to hide globals these should disappear
-    # in the future, and therefore will be changed in the properties
-
-    @property
-    def grabbing(self):
-        global is_grabbing
-        return is_grabbing
-
-    @property
-    def scaling(self):
-        global is_scaling
-        return is_scaling
-
-    @scaling.setter
-    def set_scaling(self, scaling):
-        global is_scaling
-        is_scaling = scaling
+        self.last_mag = mag
 
 class StopListener(Leap.Listener):
     """
