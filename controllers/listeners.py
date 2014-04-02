@@ -31,21 +31,40 @@ class GrabListener(Leap.Listener):
             LowpassFilter(0.9)
             ])
 
-        self.x_hand = MixedFilter([
+        self.loc_x_hand = MixedFilter([
             NoiseFilter(1000, 100, 20),
             LowpassFilter(0.05)
             ])
-        self.y_hand = MixedFilter([
+        self.loc_y_hand = MixedFilter([
             NoiseFilter(1000, 100, 20),
             LowpassFilter(0.05)
             ])
-        self.z_hand = MixedFilter([
+        self.loc_z_hand = MixedFilter([
+            NoiseFilter(1000, 100, 20),
+            LowpassFilter(0.05)
+            ])
+
+        self.rot_x_hand = MixedFilter([
+            NoiseFilter(1000, 100, 20),
+            LowpassFilter(0.05)
+            ])
+        self.rot_y_hand = MixedFilter([
+            NoiseFilter(1000, 100, 20),
+            LowpassFilter(0.05)
+            ])
+        self.rot_z_hand = MixedFilter([
             NoiseFilter(1000, 100, 20),
             LowpassFilter(0.05)
             ])
 
         self.current_state = NOTHING
-        self.hand_origin = None
+
+        self.loc_x_origin = 0
+        self.loc_y_origin = 0
+        self.loc_z_origin = 0
+        self.rot_x_origin = 0
+        self.rot_y_origin = 0
+        self.rot_z_origin = 0
 
     def is_grabbing(self):
         return self.current_state & GRABBING == GRABBING
@@ -54,9 +73,12 @@ class GrabListener(Leap.Listener):
         self.current_state = NOTHING
         self.nb_hands.empty()
         self.nb_fingers.empty()
-        self.x_hand.empty()
-        self.y_hand.empty()
-        self.z_hand.empty()
+        self.loc_x_hand.empty()
+        self.loc_y_hand.empty()
+        self.loc_z_hand.empty()
+        self.rot_x_hand.empty()
+        self.rot_y_hand.empty()
+        self.rot_z_hand.empty()
 
     def on_frame(self, controller):
         frame = controller.frame()
@@ -71,21 +93,37 @@ class GrabListener(Leap.Listener):
         fingers = hand.fingers
 
         pos = hand.stabilized_palm_position
-        self.x_hand.add_value(pos.x)
-        self.y_hand.add_value(pos.y)
-        self.z_hand.add_value(pos.z)
+        self.loc_x_hand.add_value(pos.x)
+        self.loc_y_hand.add_value(pos.y)
+        self.loc_z_hand.add_value(pos.z)
+
+        rot_x = hand.direction.pitch
+        rot_y = hand.direction.yaw
+        rot_z = hand.direction.roll
+        self.rot_x_hand.add_value(rot_x)
+        self.rot_y_hand.add_value(rot_y)
+        self.rot_z_hand.add_value(rot_z)
 
         # print 'INFO', self.nb_fingers.value, self.nb_fingers.derivative, self.x_hand.value, self.y_hand.value, self.z_hand.value
 
         self.nb_fingers.add_value(len(fingers))
         # print 'Nb finger :', self.nb_fingers.value, self.nb_fingers.derivative
         if self.is_grabbing():
-            origin = self.hand_origin
-            dx = self.x_hand.value - origin.x
-            dy = self.y_hand.value - origin.y
-            dz = self.z_hand.value - origin.z
+            dx = self.loc_x_hand.value - self.loc_x_origin
+            dy = self.loc_y_hand.value - self.loc_y_origin
+            dz = self.loc_z_hand.value - self.loc_z_origin
+            send_command('object_move', {
+                'loc_x': dx,
+                'loc_y': dy,
+                'loc_z': dz})
 
-            send_command('object_move', {'tx': dz, 'ty': dx, 'tz': dy})
+            rx = self.rot_x_hand.value - self.rot_x_origin
+            ry = self.rot_y_hand.value - self.rot_y_origin
+            rz = self.rot_z_hand.value - self.rot_z_origin
+            # send_command('object_rotate', {
+            #     'rot_x': rx,
+            #     'rot_y': ry,
+            #     'rot_z': rz})
 
         if self.is_grabbing():
             print 'FRAME'
@@ -101,28 +139,38 @@ class GrabListener(Leap.Listener):
                 self.begin_grab(hand)
 
     def begin_grab(self, hand):
-        self.hand_origin = hand.stabilized_palm_position
         self.current_state = GRABBING
 
         # Move origin
-        send_command('object_move_origin', {'x': self.hand_origin.z, 'y': self.hand_origin.x, 'z': self.hand_origin.y})
+        pos = hand.stabilized_palm_position
+        self.loc_x_origin = pos.x
+        self.loc_y_origin = pos.y
+        self.loc_z_origin = pos.z
+        send_command('object_move_origin', {
+            'loc_x': self.loc_x_origin,
+            'loc_y': self.loc_y_origin,
+            'loc_z': self.loc_z_origin})
 
         # Rotate origin
-        # x, y, z = hand.palm_normal.x, hand.palm_normal.y, hand.palm_normal.z
-        # yaw = math.atan2(x, y)
-        # r = math.sqrt(x * x + y * y)
-        # pitch = math.atan2(z, r)
-        # roll = 0
-        # send_command('object_rotate_origin', {'yaw': yaw, 'pitch': pitch, 'roll': roll})
+        self.rot_x_origin = hand.direction.pitch
+        self.rot_y_origin = hand.direction.yaw
+        self.rot_z_origin = hand.direction.roll
+        # send_command('object_rotate_origin', {
+        #     'rot_x': self.rot_x_origin,
+        #     'rot_y': self.rot_y_origin,
+        #     'rot_z': self.rot_z_origin})
 
     def end_grab(self):
-        # self.x_hand.empty()
-        # self.y_hand.empty()
-        # self.z_hand.empty()
+        self.loc_x_hand.empty()
+        self.loc_y_hand.empty()
+        self.loc_z_hand.empty()
+        self.rot_x_hand.empty()
+        self.rot_y_hand.empty()
+        self.rot_z_hand.empty()
         self.nb_fingers.empty()
-        self.hand_origin = None
         if self.is_grabbing():
             send_command('object_move_end', {})
+            # send_command('object_rotate_end', {})
             self.current_state = NOTHING
 
 class ScaleListener(Leap.Listener):

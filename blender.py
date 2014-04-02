@@ -43,6 +43,7 @@ class BBQOperator(bpy.types.Operator):
         # self.transport.setblocking(False)
         self.sockfile = None
         self.move_origin = 0, 0, 0
+        self.rotate_origin = 0, 0, 0
         self.moving = False
         self.move_lock = None
         self.scale_origin = 1, 1, 1
@@ -70,7 +71,9 @@ class BBQOperator(bpy.types.Operator):
             self.object_move_origin,
             self.object_move,
             self.object_move_end,
+            self.object_rotate_origin,
             self.object_rotate,
+            self.object_rotate_end,
             self.object_scale_origin,
             self.object_scale,
             self.object_center,
@@ -293,8 +296,8 @@ class BBQOperator(bpy.types.Operator):
         self.view_numpad('CAMERA')
 
     def object_move_origin(self, **kwargs):
-        x, y, z = kwargs['x'], kwargs['y'], kwargs['z']
-        self.move_origin = x, y, z
+        x, y, z = kwargs['loc_x'], kwargs['loc_y'], kwargs['loc_z']
+        self.move_origin = bpy.context.selected_objects[0].location.copy()
         self.moving = True
         self.move_matrix_origin = bpy.context.area.spaces[0].region_3d.view_matrix
         print('save', x, y, z)
@@ -304,8 +307,8 @@ class BBQOperator(bpy.types.Operator):
         self.move_lock = None
 
     def object_move(self, **kwargs):
-        tx, ty, tz = kwargs['tx'], kwargs['ty'], kwargs['tz']
-        x, y, z = self.move_origin
+        tx, ty, tz = kwargs['loc_x'], kwargs['loc_y'], kwargs['loc_z']
+        x, y, z = 0, 0, 0 #self.move_origin
         dx, dy, dz = tx + x, ty + y, tz + z
         if self.move_lock == 'X':
             dy, dz = y, z
@@ -320,12 +323,21 @@ class BBQOperator(bpy.types.Operator):
         # loc = (self.move_matrix_origin * mat_trans).decompose()[0]
         for o in bpy.context.selected_objects:
             # o.location = loc
-            o.location = dx, dy, dz
+            o.location = self.move_origin + mathutils.Vector((dx, -dz, dy))
+
+    def object_rotate_origin(self, **kwargs):
+        x, y, z = kwargs['rot_x'], kwargs['rot_y'], kwargs['rot_z']
+        self.rotate_origin = x, y, z
+
+    def object_rotate_end(self):
+        pass
 
     def object_rotate(self, **kwargs):
-        ax, ay, az = -kwargs['yaw'], -kwargs['pitch'], kwargs['roll']
+        ax, ay, az = kwargs['rot_x'], -kwargs['rot_y'], kwargs['rot_z']
+        x, y, z = self.rotate_origin
+        dx, dy, dz = ax + x, ay + y, az + z
         for o in bpy.context.selected_objects:
-            o.rotation_euler = (ax, ay, az)
+            o.rotation_euler = (dx, dy, dz)
 
     def object_scale_origin(self):
         s = bpy.context.selected_objects[0].scale
