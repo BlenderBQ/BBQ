@@ -32,5 +32,5 @@ basic_controllers = {
         'object': [ScaleListener, GrabListener],
         'sculpt': [PointersListener],
         'pottery': [SlideRotateListener, StopListener, PointersListener],
-        'paint': [PointersListener, ColorListener]
+        'paint': [PointersListener, ColorListener],
         }

@@ -208,33 +208,32 @@ class GrabListener(Leap.Listener):
 
 class ScaleListener(Leap.Listener):
     """
-    The scale gesture is detected when two hands are initially closed (no fingers visible).
-    The amount of scaling sent is proportionnal to the variation of distance between the two hands
-    during the gesture.
-    Detecting at least a finger cancels the movement.
+    The scale gesture is detected when two hands are initially closed (no
+    fingers visible). The amount of scaling sent is proportionnal to the
+    variation of distance between the two hands during the gesture. Detecting
+    at least a finger cancels the movement.
     """
-    def __init__(self, threshold=5, history_size=10):
+    def __init__(self, threshold=5):
         Leap.Listener.__init__(self)
-        self.history = []
-        self.history_size = history_size
         self.threshold = threshold
+        self.last_mag = 0
 
     def on_frame(self, controller):
-        # Get the most recent frame
         frame = controller.frame()
+        global is_scaling
 
         # Need at least two hands for this gesture
         # and can't scale when grabbing
         if len(frame.hands) < 2 or is_grabbing:
-            self.stop_scaling()
+            is_scaling = False
             return
 
         # Get first two hands
-        hand1, hand2 = frame.hands[:2]
+        hand1, hand2 = frame.hands[0], frame.hands[2]
 
         # No (or few) fingers must be visible
         if len(hand1.fingers) + len(hand2.fingers) > 1:
-            self.stop_scaling()
+            is_scaling = False
             return
 
         # Distance between the two hands
@@ -245,30 +244,12 @@ class ScaleListener(Leap.Listener):
         if is_scaling:
             send_long_command('object_scale', { 'sx': mag, 'sy': mag, 'sz': mag },
                 filters={'sx': 'coordinate', 'sy': 'coordinate', 'sz': 'coordinate'})
-            return
 
         # Start scaling only if hands move apart enough
-        if abs(mag - self.history[-1]) >= self.threshold:
-            self.start_scaling(mag)
-        self.history.append(mag)
-
-        # Limit history length to history_size
-        if len(self.history) > self.history_size:
-            self.history = self.history[-self.history_size:]
-
-    def start_scaling(self, magnitude):
-        global is_scaling
-        is_scaling = True
-
-        # Clear history (it is not needed when movement is activated)
-        self.history = []
-
-        send_command('object_scale_origin', {})
-
-    def stop_scaling(self):
-        global is_scaling
-        is_scaling = False
-        self.history = []
+        if abs(mag - self.last_mag) >= self.threshold:
+            is_scaling = True
+            send_command('object_scale_origin')
+        self.last_mag = mag
 
 class StopListener(Leap.Listener):
     """
