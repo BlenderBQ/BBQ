@@ -18,9 +18,9 @@ class Controller(object):
 
         # setup leap listener
         lstn = Leap.Listener()
-        lstn.on_init = lambda _: map(lambda g: g.setup(), self.gestures)
-        lstn.on_exit = lambda _: map(lambda g: g.cleanup(), self.gestures)
-        lstn.on_frame = lambda c: self.frame(c)
+        lstn.on_init = self.controller_bind(self.init)
+        lstn.on_exit = self.controller_bind(self.exit)
+        lstn.on_frame = self.controller_bind(self.frame)
 
         # members
         self.lock = Lock()
@@ -48,29 +48,36 @@ class Controller(object):
                 raise ValueError('Gesture not added')
             del self.gestures[gesture_name]
 
-    def frame(self, controller):
-        """
-        Called on a frame, taking care of gestures and calling update().
-        """
-        with self.lock:
-            # memorize controller
+    def controller_bind(self, callback):
+        def inner(controller):
             self.current_controller = controller
             self.current_frame = controller.frame()
+            callback(controller)
+        return inner
 
-            # gesture detection
-            for gesture_name, gesture in self.gestures.iteritems():
-                gesture_was_activated = self.gesture_activated.get(gesture_name, False)
-                gesture_is_activated = gesture.detect(controller)
-                self.gesture_activated[gesture_name] = gesture_is_activated
+    def init(self, controller):
+        for gesture in self.gestures.itervalues():
+            gesture.setup()
 
-                # fire callbacks
-                if gesture_is_activated and not gesture_was_activated:
-                    gesture.do_activated()
-                elif gesture_was_activated and not gesture_is_activated:
-                    gesture.do_deactivated()
+    def exit(self, controller):
+        for gesture in self.gestures.itervalues():
+            gesture.cleanup()
 
-            # actual update
-            self.update()
+    def frame(self, controller):
+        # gesture detection
+        for gesture_name, gesture in self.gestures.iteritems():
+            gesture_was_activated = self.gesture_activated.get(gesture_name, False)
+            gesture_is_activated = gesture.detect(controller)
+            self.gesture_activated[gesture_name] = gesture_is_activated
+
+            # fire callbacks
+            if gesture_is_activated and not gesture_was_activated:
+                gesture.do_activated()
+            elif gesture_was_activated and not gesture_is_activated:
+                gesture.do_deactivated()
+
+        # actual update
+        self.update()
 
     def gesture_is_activated(self, gesture_name):
         """
@@ -190,8 +197,6 @@ class ControllerBinding(object):
 
         # controller class binding
         self.ctrl_cls = ctrl_cls
-        self.ctrl_cls.enter = self.do_enter
-        self.ctrl_cls.leave = self.do_leave
         self.gestures = gestures
 
         # bound callbacks
@@ -201,6 +206,8 @@ class ControllerBinding(object):
 
     def factory(self):
         ctrl = self.ctrl_cls(self.gestures)
+        ctrl.enter = self.do_enter
+        ctrl.leave = self.do_leave
         self.ctrl_cls.update = lambda: self.update(ctrl)
         return ctrl
 
