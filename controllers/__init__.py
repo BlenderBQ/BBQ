@@ -17,8 +17,8 @@ class ObjectController(Leap.Listener):
         self.is_grabbing = False
 
         # scale stuff
-        self.scale_opening_hands = (gestures.OpeningHand(), gestures.ClosingHand())
-        self.scale_closing_hands = (gestures.OpeningHand(), gestures.ClosingHand())
+        self.scale_opening_hands = (gestures.OpeningHand(), gestures.OpeningHand())
+        self.scale_closing_hands = (gestures.ClosingHand(), gestures.ClosingHand())
         self.is_scaling = False
 
         # hand location
@@ -69,7 +69,6 @@ class ObjectController(Leap.Listener):
         else:
             self.reset_grab()
             self.reset_scale()
-            return
 
     # scale interface
 
@@ -77,16 +76,20 @@ class ObjectController(Leap.Listener):
         first_hand, second_hand = frame.hands[0], frame.hands[1]
         self.scale_closing_hands[0].frame(first_hand)
         self.scale_opening_hands[0].frame(first_hand)
-        self.scale_opening_hands[1].frame(second_hand)
         self.scale_closing_hands[1].frame(second_hand)
+        self.scale_opening_hands[1].frame(second_hand)
 
         # start scaling
         if not self.is_scaling:
+            #print 'Hand', first_hand.id, 'closed:', self.scale_closing_hands[0].is_done()
+            #print 'Hand', second_hand.id, 'closed:', self.scale_closing_hands[1].is_done()
             if all(ch.is_done() for ch in self.scale_closing_hands):
                 self.start_scaling(first_hand, second_hand)
         else:
+            #print 'Hand', first_hand.id, 'opened:', self.scale_opening_hands[0].is_done()
+            #print 'Hand', second_hand.id, 'opened:', self.scale_opening_hands[1].is_done()
             if any(oh.is_done() for oh in self.scale_opening_hands):
-                self.stop_scaling(first_hand, second_hand)
+                self.stop_scaling()
             else:
                 self.continue_scaling(first_hand, second_hand)
 
@@ -94,7 +97,7 @@ class ObjectController(Leap.Listener):
         print 'start_scaling'
         self.is_scaling = True
 
-    def stop_scaling(self, first_hand, second_hand):
+    def stop_scaling(self):
         print 'stop_scaling'
         self.is_scaling = False
 
@@ -106,7 +109,8 @@ class ObjectController(Leap.Listener):
         self.scale_closing_hands[1].reset()
         self.scale_opening_hands[0].reset()
         self.scale_opening_hands[1].reset()
-        #self.stop_scaling()
+        if self.is_scaling:
+            self.stop_scaling()
 
     # grab interface
 
