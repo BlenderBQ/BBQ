@@ -6,24 +6,30 @@ from communication import send_command
 class ObjectController(Leap.Listener):
     def __init__(self):
         super(ObjectController, self).__init__()
-
         self.nb_hands = MixedFilter([
             NoiseFilter(10, 0.3, 10),
             LowpassFilter(0.5)])
+        self.grab = GrabLogic()
+        self.scale = ScaleLogic()
 
-        # grab stuff
+    def on_frame(self, controller):
+        frame = controller.frame()
+        self.nb_hands.add_value(len(frame.hands))
+
+        # 1 hand for grab, 2 for scale
+        if self.nb_hands.around(1, 0.1):
+            self.grab.frame(frame)
+        elif self.nb_hands.around(2, 0.1):
+            self.scale.frame(frame)
+        else:
+            self.grab.reset()
+            self.scale.reset()
+
+class GrabLogic(object):
+    def __init__(self):
         self.opening_hand = gestures.OpeningHand()
         self.closing_hand = gestures.ClosingHand()
         self.is_grabbing = False
-
-        # scale stuff
-        self.scale_opening_hands = {}
-        self.scale_closing_hands = {}
-        self.scale_magnitude = MixedFilter([
-            NoiseFilter(1000, 100, 20),
-            LowpassFilter(0.05)])
-        self.scale_magnitude_origin = 0
-        self.is_scaling = False
 
         # hand location
         self.loc_x_hand = MixedFilter([
@@ -55,81 +61,7 @@ class ObjectController(Leap.Listener):
         self.rot_y_origin = 0
         self.rot_z_origin = 0
 
-    def on_init(self, controller):
-        pass
-
-    def on_exit(self, controller):
-        pass
-
-    def on_frame(self, controller):
-        frame = controller.frame()
-        self.nb_hands.add_value(len(frame.hands))
-
-        # need about 1 hand
-        if self.nb_hands.around(1, 0.1):
-            self.try_grab(frame)
-        elif self.nb_hands.around(2, 0.1):
-            self.try_scale(frame)
-        else:
-            self.reset_grab()
-            self.reset_scale()
-
-    # scale interface
-
-    def try_scale(self, frame):
-        first_hand, second_hand = frame.hands[0], frame.hands[1]
-
-        # make sure scale hands are setup
-        if not self.scale_closing_hands:
-            self.scale_closing_hands = { hand.id: gestures.ClosingHand() for hand in (first_hand, second_hand) }
-        if not self.scale_opening_hands:
-            self.scale_opening_hands = { hand.id: gestures.OpeningHand() for hand in (first_hand, second_hand) }
-
-        # do frames
-        self.scale_closing_hands[first_hand.id].frame(first_hand)
-        self.scale_opening_hands[first_hand.id].frame(first_hand)
-        self.scale_closing_hands[second_hand.id].frame(second_hand)
-        self.scale_opening_hands[second_hand.id].frame(second_hand)
-
-        # start scaling
-        if not self.is_scaling:
-            if all(ch.is_done() for ch in self.scale_closing_hands.itervalues()):
-                self.start_scaling(first_hand, second_hand)
-        else:
-            if any(oh.is_done() for oh in self.scale_opening_hands.itervalues()):
-                self.stop_scaling()
-            else:
-                self.continue_scaling(first_hand, second_hand)
-
-    def start_scaling(self, first_hand, second_hand):
-        self.is_scaling = True
-        send_command('object_scale_origin')
-        dis = first_hand.stabilized_palm_position - second_hand.stabilized_palm_position
-        self.scale_magnitude_origin = dis.magnitude
-
-    def stop_scaling(self):
-        self.is_scaling = False
-
-    def continue_scaling(self, first_hand, second_hand):
-        dis = first_hand.stabilized_palm_position - second_hand.stabilized_palm_position
-        self.scale_magnitude.add_value(dis.magnitude)
-        mag = self.scale_magnitude.value / self.scale_magnitude_origin
-        send_command('object_scale', { 'sx': mag, 'sy': mag, 'sz': mag })
-
-    def reset_scale(self):
-        for hand_filter in self.scale_closing_hands.itervalues():
-            hand_filter.reset()
-        for hand_filter in self.scale_opening_hands.itervalues():
-            hand_filter.reset()
-        if self.is_scaling:
-            self.stop_scaling()
-        self.scale_magnitude.empty()
-        self.scale_opening_hands = {}
-        self.scale_closing_hands = {}
-
-    # grab interface
-
-    def try_grab(self, frame):
+    def frame(self, frame):
         hand = frame.hands[0]
         self.opening_hand.frame(hand)
         self.closing_hand.frame(hand)
@@ -140,6 +72,12 @@ class ObjectController(Leap.Listener):
             self.ungrab()
         if self.is_grabbing:
             self.continue_grab(hand)
+
+    def reset(self):
+        self.opening_hand.reset()
+        self.closing_hand.reset()
+        if self.is_grabbing:
+            self.ungrab()
 
     def grab(self, hand):
         print 'GRAB'
@@ -193,11 +131,66 @@ class ObjectController(Leap.Listener):
         rz = self.rot_z_hand.value - self.rot_z_origin
         send_command('object_rotate', { 'rot_x': rx, 'rot_y': ry, 'rot_z': rz})
 
-    def reset_grab(self):
-        self.opening_hand.reset()
-        self.closing_hand.reset()
-        if self.is_grabbing:
-            self.ungrab()
+class ScaleLogic(object):
+    def __init__(self):
+        self.opening_hands = {}
+        self.closing_hands = {}
+        self.magnitude = MixedFilter([
+            NoiseFilter(1000, 100, 20),
+            LowpassFilter(0.05)])
+        self.magnitude_origin = 0
+        self.is_scaling = False
+
+    def frame(self, frame):
+        first_hand, second_hand = frame.hands[0], frame.hands[1]
+
+        # make sure scale hands are setup
+        if not self.closing_hands:
+            self.closing_hands = { hand.id: gestures.ClosingHand() for hand in (first_hand, second_hand) }
+        if not self.opening_hands:
+            self.opening_hands = { hand.id: gestures.OpeningHand() for hand in (first_hand, second_hand) }
+
+        # do frames
+        self.closing_hands[first_hand.id].frame(first_hand)
+        self.opening_hands[first_hand.id].frame(first_hand)
+        self.closing_hands[second_hand.id].frame(second_hand)
+        self.opening_hands[second_hand.id].frame(second_hand)
+
+        # start scaling
+        if not self.is_scaling:
+            if all(ch.is_done() for ch in self.closing_hands.itervalues()):
+                self.start(first_hand, second_hand)
+        else:
+            if any(oh.is_done() for oh in self.opening_hands.itervalues()):
+                self.stop()
+            else:
+                self.run(first_hand, second_hand)
+
+    def start(self, first_hand, second_hand):
+        self.is_scaling = True
+        send_command('object_scale_origin')
+        dis = first_hand.stabilized_palm_position - second_hand.stabilized_palm_position
+        self.magnitude_origin = dis.magnitude
+
+    def stop(self):
+        self.is_scaling = False
+
+    def run(self, first_hand, second_hand):
+        dis = first_hand.stabilized_palm_position - second_hand.stabilized_palm_position
+        self.magnitude.add_value(dis.magnitude)
+        mag = self.magnitude.value / self.magnitude_origin
+        send_command('object_scale', { 'sx': mag, 'sy': mag, 'sz': mag })
+
+    def reset(self):
+        for hand_filter in self.closing_hands.itervalues():
+            hand_filter.reset()
+        for hand_filter in self.opening_hands.itervalues():
+            hand_filter.reset()
+        if self.is_scaling:
+            self.stop()
+        self.magnitude.empty()
+        self.opening_hands = {}
+        self.closing_hands = {}
 
 # leap and its listener/controller
 _leap_controller = Leap.Controller()
