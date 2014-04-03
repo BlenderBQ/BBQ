@@ -83,7 +83,6 @@ class GrabLogic(object):
             self.stop()
 
     def start(self, hand):
-        print 'GRAB'
         self.is_activated = True
 
         # move origin
@@ -100,7 +99,6 @@ class GrabLogic(object):
         send_command('object_rotate_origin', {})
 
     def stop(self):
-        print 'UNGRAB'
         self.is_activated = False
         self.loc_x_hand.empty()
         self.loc_y_hand.empty()
@@ -136,42 +134,34 @@ class GrabLogic(object):
 
 class ScaleLogic(object):
     def __init__(self):
-        self.grabbing_hands = {}
+        self.is_activated = False
+        self.two_hands_grabbing = gestures.TwoHandsGrabbing()
         self.magnitude = MixedFilter([
-            NoiseFilter(1000, 100, 20),
+            #NoiseFilter(1000, 100, 20),
             LowpassFilter(0.05)])
         self.magnitude_origin = 0
-        self.is_scaling = False
 
     def frame(self, frame):
         first_hand, second_hand = frame.hands[0], frame.hands[1]
-
-        # make sure hands are setup
-        if not self.grabbing_hands:
-            self.grabbing_hands = { hand.id: gestures.GrabbingHand() for hand in (first_hand, second_hand) }
-
-        # do frames
-        self.grabbing_hands[first_hand.id].frame(first_hand)
-        self.grabbing_hands[second_hand.id].frame(second_hand)
-
-        # start scaling
-        if not self.is_scaling:
-            if all(gh.just_closed() for gh in self.grabbing_hands.itervalues()):
+        self.two_hands_grabbing.frame((first_hand, second_hand))
+        if not self.is_activated:
+            if self.two_hands_grabbing.just_grabbed():
                 self.start(first_hand, second_hand)
         else:
-            if any(gh.just_opened() for gh in self.grabbing_hands.itervalues()):
+            if self.two_hands_grabbing.just_lost():
                 self.stop()
             else:
                 self.run(first_hand, second_hand)
 
     def start(self, first_hand, second_hand):
-        self.is_scaling = True
+        self.is_activated = True
         send_command('object_scale_origin')
         dis = first_hand.stabilized_palm_position - second_hand.stabilized_palm_position
         self.magnitude_origin = dis.magnitude
 
     def stop(self):
-        self.is_scaling = False
+        self.is_activated = False
+        self.two_hands_grabbing.reset()
 
     def run(self, first_hand, second_hand):
         dis = first_hand.stabilized_palm_position - second_hand.stabilized_palm_position
@@ -180,12 +170,9 @@ class ScaleLogic(object):
         send_command('object_scale', { 'sx': mag, 'sy': mag, 'sz': mag })
 
     def reset(self):
-        for hand_filter in self.grabbing_hands.itervalues():
-            hand_filter.reset()
-        if self.is_scaling:
+        if self.is_activated:
             self.stop()
         self.magnitude.empty()
-        self.grabbing_hands = {}
 
 # leap and its listener/controller
 _leap_controller = Leap.Controller()

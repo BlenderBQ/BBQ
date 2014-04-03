@@ -1,11 +1,8 @@
-import os
 import json
 import socket
 import threading
 import logging
 import time
-
-from filters import Filter, CompositeFilter
 
 # debugging
 from pprint import pformat
@@ -40,34 +37,3 @@ def send_command(name, data={}):
                 logging.exception(e)
                 clients.remove(c)
         time.sleep(0.02)
-
-_filters = {}
-_filter_mapping = {
-        'angle': Filter,#lambda: Filter(threshold=0.005),
-        'coordinate': lambda: Filter(threshold=0.005),
-        'position': lambda: CompositeFilter(n=3)
-        }
-
-def send_long_command(name, data, filters=None):
-    """
-    Send a command which can be sent many times per frame, in which case
-    filters can be specified for certain arguments.
-    The "filters" dictionary maps arguments to filter functions.
-    """
-    if filters is None:
-        filters = {}
-
-    changed = False
-    for arg, filter_key in filters.iteritems():
-        _filters.setdefault(name, {})
-        cmd_filters = _filters[name]
-        if arg not in cmd_filters:
-            cmd_filters[arg] = _filter_mapping[filter_key]()
-        new_value, interesting = cmd_filters[arg].apply(data[arg])
-        if not interesting:
-            continue
-        data[arg] = new_value
-        changed = True
-
-    if changed:
-        return send_command(name, data)
