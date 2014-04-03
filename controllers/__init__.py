@@ -29,7 +29,7 @@ class GrabLogic(object):
     def __init__(self):
         self.opening_hand = gestures.OpeningHand()
         self.closing_hand = gestures.ClosingHand()
-        self.is_grabbing = False
+        self.is_activated = False
 
         # hand location
         self.loc_x_hand = MixedFilter([
@@ -66,22 +66,22 @@ class GrabLogic(object):
         self.opening_hand.frame(hand)
         self.closing_hand.frame(hand)
 
-        if not self.is_grabbing and self.closing_hand.is_done():
-            self.grab(hand)
-        if self.is_grabbing and self.opening_hand.is_done():
-            self.ungrab()
-        if self.is_grabbing:
-            self.continue_grab(hand)
+        if not self.is_activated and self.closing_hand.is_done():
+            self.start(hand)
+        if self.is_activated and self.opening_hand.is_done():
+            self.stop()
+        if self.is_activated:
+            self.run(hand)
 
     def reset(self):
         self.opening_hand.reset()
         self.closing_hand.reset()
-        if self.is_grabbing:
-            self.ungrab()
+        if self.is_activated:
+            self.stop()
 
-    def grab(self, hand):
+    def start(self, hand):
         print 'GRAB'
-        self.is_grabbing = True
+        self.is_activated = True
 
         # move origin
         pos = hand.stabilized_palm_position
@@ -96,9 +96,9 @@ class GrabLogic(object):
         self.rot_z_origin = hand.direction.roll
         send_command('object_rotate_origin', {})
 
-    def ungrab(self):
+    def stop(self):
         print 'UNGRAB'
-        self.is_grabbing = False
+        self.is_activated = False
         self.loc_x_hand.empty()
         self.loc_y_hand.empty()
         self.loc_z_hand.empty()
@@ -109,7 +109,7 @@ class GrabLogic(object):
         send_command('object_move_end', {})
         send_command('object_rotate_end', {})
 
-    def continue_grab(self, hand):
+    def run(self, hand):
         pos = hand.stabilized_palm_position
         self.loc_x_hand.add_value(pos.x)
         self.loc_y_hand.add_value(pos.y)
