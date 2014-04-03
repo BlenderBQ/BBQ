@@ -86,8 +86,6 @@ class TwoHandsGrabbing(object):
     def reset(self):
         self.first_hand_closed.empty()
         self.second_hand_closed.empty()
-        #for hand_filter in self.grabbing_hands.itervalues():
-            #hand_filter.reset()
         self.grabbing_hands = {}
 
     def just_grabbed(self):
