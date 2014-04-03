@@ -69,10 +69,12 @@ class MyListener(Leap.Listener):
         self.opening_hand.frame(hand)
         self.closing_hand.frame(hand)
 
+        # self.test.frame(hand)
+
         if not self.is_grabbing and self.closing_hand.is_done():
             self.grab(hand)
         if self.is_grabbing and self.opening_hand.is_done():
-            self.ungrab(hand)
+            self.ungrab()
         if self.is_grabbing:
             self.continue_grab(hand)
 
@@ -93,7 +95,7 @@ class MyListener(Leap.Listener):
         self.rot_z_origin = hand.direction.roll
         send_command('object_rotate_origin', {})
 
-    def ungrab(self, hand):
+    def ungrab(self):
         print 'UNGRAB'
         self.is_grabbing = False
         self.loc_x_hand.empty()
