@@ -11,10 +11,15 @@ class ObjectController(Leap.Listener):
             NoiseFilter(10, 0.3, 10),
             LowpassFilter(0.5)])
 
+        # grab stuff
         self.opening_hand = gestures.OpeningHand()
         self.closing_hand = gestures.ClosingHand()
-
         self.is_grabbing = False
+
+        # scale stuff
+        self.scale_opening_hands = (gestures.OpeningHand(), gestures.ClosingHand())
+        self.scale_closing_hands = (gestures.OpeningHand(), gestures.ClosingHand())
+        self.is_scaling = False
 
         # hand location
         self.loc_x_hand = MixedFilter([
@@ -57,18 +62,58 @@ class ObjectController(Leap.Listener):
         self.nb_hands.add_value(len(frame.hands))
 
         # need about 1 hand
-        if not self.nb_hands.around(1, 0.1):
-            self.opening_hand.reset()
-            self.closing_hand.reset()
-            if self.is_grabbing:
-                self.ungrab()
+        if self.nb_hands.around(1, 0.1):
+            self.try_grab(frame)
+        elif self.nb_hands.around(2, 0.1):
+            self.try_scale(frame)
+        else:
+            self.reset_grab()
+            self.reset_scale()
             return
 
+    # scale interface
+
+    def try_scale(self, frame):
+        first_hand, second_hand = frame.hands[0], frame.hands[1]
+        self.scale_closing_hands[0].frame(first_hand)
+        self.scale_opening_hands[0].frame(first_hand)
+        self.scale_opening_hands[1].frame(second_hand)
+        self.scale_closing_hands[1].frame(second_hand)
+
+        # start scaling
+        if not self.is_scaling:
+            if all(ch.is_done() for ch in self.scale_closing_hands):
+                self.start_scaling(first_hand, second_hand)
+        else:
+            if any(oh.is_done() for oh in self.scale_opening_hands):
+                self.stop_scaling(first_hand, second_hand)
+            else:
+                self.continue_scaling(first_hand, second_hand)
+
+    def start_scaling(self, first_hand, second_hand):
+        print 'start_scaling'
+        self.is_scaling = True
+
+    def stop_scaling(self, first_hand, second_hand):
+        print 'stop_scaling'
+        self.is_scaling = False
+
+    def continue_scaling(self, first_hand, second_hand):
+        print 'continue_scaling'
+
+    def reset_scale(self):
+        self.scale_closing_hands[0].reset()
+        self.scale_closing_hands[1].reset()
+        self.scale_opening_hands[0].reset()
+        self.scale_opening_hands[1].reset()
+        #self.stop_scaling()
+
+    # grab interface
+
+    def try_grab(self, frame):
         hand = frame.hands[0]
         self.opening_hand.frame(hand)
         self.closing_hand.frame(hand)
-
-        # self.test.frame(hand)
 
         if not self.is_grabbing and self.closing_hand.is_done():
             self.grab(hand)
@@ -128,6 +173,12 @@ class ObjectController(Leap.Listener):
         ry = self.rot_y_hand.value - self.rot_y_origin
         rz = self.rot_z_hand.value - self.rot_z_origin
         send_command('object_rotate', { 'rot_x': rx, 'rot_y': ry, 'rot_z': rz})
+
+    def reset_grab(self):
+        self.opening_hand.reset()
+        self.closing_hand.reset()
+        if self.is_grabbing:
+            self.ungrab()
 
 # leap and its listener/controller
 _leap_controller = Leap.Controller()
