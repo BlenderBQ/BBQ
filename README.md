@@ -1,8 +1,9 @@
 BlenderBQ
 =========
 
-Blender hands free
+A Leap-Motion and voice-control interface for Blender.
 
+Check out [our demo video](https://www.youtube.com/watch?v=jP8xYVJ3uNI)!
 
 ## Required
 
