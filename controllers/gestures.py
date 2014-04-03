@@ -38,3 +38,22 @@ class OpeningHand(object):
                 or self.nb_fingers.around(5, 1.5):
             return True
         return False
+
+class GrabbingHand(object):
+    def __init__(self):
+        self.opening_hand = OpeningHand()
+        self.closing_hand = ClosingHand()
+
+    def frame(self, hand):
+        self.opening_hand.frame(hand)
+        self.closing_hand.frame(hand)
+
+    def reset(self):
+        self.opening_hand.reset()
+        self.closing_hand.reset()
+
+    def just_closed(self):
+        return self.closing_hand.is_done()
+
+    def just_opened(self):
+        return self.opening_hand.is_done()
