@@ -1,12 +1,11 @@
-from threading import Lock
 import Leap
 from controllers import gestures
-from filters import *
+from filters import (MixedFilter, NoiseFilter, LowpassFilter)
 from communication import send_command
 
-class MyListener(Leap.Listener):
+class ObjectController(Leap.Listener):
     def __init__(self):
-        super(MyListener, self).__init__()
+        super(ObjectController, self).__init__()
 
         self.nb_hands = MixedFilter([
             NoiseFilter(10, 0.3, 10),
@@ -57,7 +56,7 @@ class MyListener(Leap.Listener):
         frame = controller.frame()
         self.nb_hands.add_value(len(frame.hands))
 
-        # gesture needs about 1 hand
+        # need about 1 hand
         if not self.nb_hands.around(1, 0.1):
             self.opening_hand.reset()
             self.closing_hand.reset()
@@ -128,6 +127,7 @@ class MyListener(Leap.Listener):
         rz = self.rot_z_hand.value - self.rot_z_origin
         send_command('object_rotate', { 'rot_x': rx, 'rot_y': ry, 'rot_z': rz})
 
+# leap and its listener/controller
 _leap_controller = Leap.Controller()
 _current_controller = None
 
@@ -135,8 +135,7 @@ def disable_current_controller():
     global _current_controller
     if _current_controller is None:
         return
-    _current_controller.leave()
-    _leap_controller.remove_listener(_current_controller.listener)
+    _leap_controller.remove_listener(_current_controller)
     _current_controller = None
 
 defined_controllers = {}
@@ -151,5 +150,4 @@ def set_current_controller(ctrl):
     # add listener to leap controller
     global _current_controller
     _current_controller = ctrl()
-    _current_controller.enter()
-    _leap_controller.add_listener(_current_controller.listener)
+    _leap_controller.add_listener(_current_controller)

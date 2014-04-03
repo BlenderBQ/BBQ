@@ -9,7 +9,8 @@ Options:
     --no-vr         run without voice recognition (automatic if not available)
 """
 
-import os, sys
+import os
+import sys
 import socket
 import threading
 import logging
@@ -21,10 +22,10 @@ import Leap
 
 import communication as com
 from commands import interpret_command
-from controllers import set_current_controller, disable_current_controller, Controller
-# from controllers.default import ObjectController
+from controllers import (set_current_controller, disable_current_controller,
+        ObjectController)
 
-# Mac not-imports
+# try to get VR
 try:
     from voice import VoiceRecognition
     vr_available = True
@@ -68,8 +69,7 @@ if __name__ == '__main__':
         vr.start()
 
     # default mode
-    # set_current_controller(ObjectController)
-    set_current_controller(Controller)
+    set_current_controller(ObjectController)
 
     if '-i' in sys.argv or '--interactive' in sys.argv:
         t = threading.Thread(target=run_server)
