@@ -72,5 +72,4 @@ Run these commands in a UNIX terminal.
 4. `blender -P blender.py [filename]` (use the `filename` parameter if you want to open a file directly)
 5. In Blender, using the command palette (shortcut: `spacebar`), launch the "BBQ operator"
 
-If everything is working correctly, you should lose mouse control over the scene while the BBQ operator is running.
-
+If everything is working correctly, you should lose mouse control over the scene while the BBQ operator is running. Blender should now respond to gesture and voice commands.

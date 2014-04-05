@@ -1,7 +1,3 @@
-# Leap API
-Leap.py
-lib/**
-
 *.py[cod]
 
 # C extensions
@@ -38,3 +34,7 @@ nosetests.xml
 .mr.developer.cfg
 .project
 .pydevproject
+
+# Unused resources
+*.blend1
+*.data
