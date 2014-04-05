@@ -4,7 +4,6 @@ sys.path.insert(0, os.path.join(this_dir, 'lib'))
 sys.path.insert(0, os.path.join(this_dir, '.'))
 
 import Leap
-from sculpt import SculptListener
 from pottery import PotteryListener
 from listeners import GrabListener
 from listeners import ScaleListener
