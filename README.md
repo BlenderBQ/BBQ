@@ -3,7 +3,7 @@ BlenderBQ
 
 A Leap Motion and voice-control interface for Blender.
 
-Check out our [demo video](https://wwww.youtube.com/watch?v=jP8xYVJ3uNI)!
+Check out our [demo video](http://www.youtube.com/watch?v=jP8xYVJ3uNI)!
 
 ## Features
 
