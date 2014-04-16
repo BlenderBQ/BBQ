@@ -10,7 +10,7 @@ Dans un premier temps, le serveur va démarrer l'écoute d'événements du
 LeapMotion, ainsi que la pipeline de reconnaissance vocale (dont les
 fonctionnements sont détaillés plus loin).
 
-Celui-ci tourne sur Python 2.7, car l'API LeapMotion n'est [pas (à l'écriture
+Celui-ci tourne sur Python 2.7, car l'API [LeapMotion n'est pas (à l'écriture
 de cette article)][1] compatible avec les versions suivantes de Python (3.3 par
 exemple). L'architecture client-serveur est tout ce qu'il y a de plus standard :
 le serveur va envoyer des commandes en fonction des entrées LeapMotion /
