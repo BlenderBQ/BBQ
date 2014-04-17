@@ -66,7 +66,7 @@ de l'outil [lmtool][5] de CMUSphinx.
 
 ## Commandes implémentées
 
-Comme mentionné précédemment, nous avons constitué un dictionnaire des commandes utilisables. Il s'agit de mots courts et très différents les uns des autres afin de rendre leur reconnaissance plus fiable. Un premier groupe de commandes (ˋaboveˋ, ˋright`, ˋcameraˋ, etc) permettent de contrôler la vue, tandis que le second groupe (`objectˋ, ˋpotteryˋ, ˋpaintˋ) sert à passer d'un mode à un autre.
+Le dictionnaire est constitué de mots courts et très différents les uns des autres afin de rendre leur reconnaissance plus fiable. Un premier groupe de commandes (ˋaboveˋ, ˋright`, ˋcameraˋ, etc) permet de contrôler la vue, tandis que le second groupe (`objectˋ, ˋpotteryˋ, ˋpaintˋ) sert à passer d'un mode à un autre.
 
 Il est facile d'ajouter des commandes supplémentaires puisqu'il suffit de les insérer dans le dictionnaire puis de les faire correspondre à l'appel correspondant dans l'API Blender.
 
