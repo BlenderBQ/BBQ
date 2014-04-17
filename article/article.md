@@ -83,7 +83,7 @@ En 24 heures, nous avons implémenté quatre gestes :
 - Un balayement de la main (geste `swipe`) permet, à la manière d'un potier, de mettre en rotation un objet.
 - Enfin, le geste `touch` permet, en pointant le doigt dans la direction souhaitée, de sculpter l'objet de manière très intuitive.
 
-# Autres contraintes de developpement
+# Autres contraintes
 
 Outre les challenges techniques surmontés, l'interface BBQ a été réalisée en 24 heures pendant le hackathon Fhacktory de Mars 2014 et a pris la première place.
 
