@@ -1,3 +1,5 @@
+# BlenderBQ : interface vocale et gestuelle pour Blender
+
 # L'architecture de l'application
 
 Notre application est divisée en deux parties : un serveur qui récupère et
@@ -30,7 +32,7 @@ Pickle, donc incompatible entre versions de Python.
 
 En ce qui concerne le contrôle de Blender, beaucoup d'obstacles ont dû être surmontés :
 
-Blender bloque dès lancement d'un script, et ce jusqu'à ce que celui-ci se termine. Cependant, nous devions absolument maintenir l'écoute sur le serveur d'entrées. Nous avons donc utilisé le concept d'[opérateurs modaux][3] mis à disposition par Blender.
+Blender bloque dès lancements d'un script, et ce jusqu'à ce que celui-ci se termine. Cependant, nous devions absolument maintenir l'écoute sur le serveur d'entrées. Nous avons donc utilisé le concept d'[opérateurs modaux][3] mis à disposition par Blender.
 
 [3]: http://www.blender.org/documentation/blender_python_api_2_70_release/bpy.types.Operator.html "Opérateurs modaux Blender"
 
@@ -80,3 +82,9 @@ En 24 heures, nous avons implémenté quatre gestes :
 - De manière complémentaire, le geste `scale` permet d'agrandir ou rétrécir l'objet en mimant un étirement avec les deux mains.
 - Un balayement de la main (geste `swipe`) permet, à la manière d'un potier, de mettre en rotation un objet.
 - Enfin, le geste `touch` permet, en pointant le doigt dans la direction souhaitée, de sculpter l'objet de manière très intuitive.
+
+# Autres contraintes de developpement
+
+Outre les challenges techniques surmontés, l'interface BBQ a été réalisée en 24 heures pendant le hackathon Fhacktory de Mars 2014 et a pris la première place.
+
+Merlin Nimier-David, Jean-Marie Commets, Pierre Turpin, Arthur Gustave Monod, Alin Dicu (Fhacktory)
