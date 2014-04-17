@@ -51,7 +51,9 @@ induit une conversion obligatoire des valeurs de coordonnées. D'abord à cause
 de l'échelle, mais aussi à cause de l'orientation des axes et de la différence
 entre coordonnées absolues et relatives.
 
-# La chaîne de commande vocale
+# Commande vocale
+
+## La chaîne de traitement
 
 La commande vocale est basée sur l'utilisation de PocketSphinx (CMUSphinx),
 intégré via une pipeline GStreamer, et disponible à travers une librairie
@@ -62,10 +64,15 @@ de l'outil [lmtool][5] de CMUSphinx.
 
 [5]: http://www.speech.cs.cmu.edu/tools/lmtool-new.html
 
+## Commandes implémentées
+
+Comme mentionné précédemment, nous avons constitué un dictionnaire des commandes utilisables. Il s'agit de mots courts et très différents les uns des autres afin de rendre leur reconnaissance plus fiable. Un premier groupe de commandes (ˋaboveˋ, ˋright`, ˋcameraˋ, etc) permettent de contrôler la vue, tandis que le second groupe (`objectˋ, ˋpotteryˋ, ˋpaintˋ) sert à passer d'un mode à un autre.
+
+Il est facile d'ajouter des commandes supplémentaires puisqu'il suffit de les insérer dans le dictionnaire puis de les faire correspondre à l'appel correspondant dans l'API Blender.
+
 # La grammaire gestuelle
 
-Au cours du temps, le Leap Motion envoie régulièrement des "frames", qui
-contiennent tout ce qu'il détecte. Ces frames comprennent le nombre de mains détectées et leur position en 3 dimensions, ainsi que le nombre de doigts visibles pour chaque main, ainsi que leur position. La fréquence d'envoi des frames est élevée : environ 20 frames sont envoyées par seconde. Cependant, cette fréquence peut varier selon les ressources disponibles, l'activité générale, et d'autres facteurs. À chaque réception d'une de ces frames, notre serveur analyse le mouvement des mains de l'utilisateur. Ceci est réalisé principalement par mémorisation des informations clé à chaque étape, afin d'en analyser l'évolution au cours du temps.
+Au cours du temps, le Leap Motion envoie régulièrement des "frames", qui contiennent tout ce qu'il détecte. Ces frames comprennent le nombre de mains détectées et leur position en 3 dimensions, ainsi que le nombre de doigts visibles pour chaque main, ainsi que leur position. La fréquence d'envoi des frames est élevée : environ 20 frames sont envoyées par seconde. Cependant, cette fréquence peut varier selon les ressources disponibles, l'activité générale, et d'autres facteurs. À chaque réception d'une de ces frames, notre serveur analyse le mouvement des mains de l'utilisateur. Ceci est réalisé principalement par mémorisation des informations clé à chaque étape, afin d'en analyser l'évolution au cours du temps.
 
 En 24 heures, nous avons implémenté quatre gestes :
 
@@ -73,23 +80,3 @@ En 24 heures, nous avons implémenté quatre gestes :
 - De manière complémentaire, le geste `scale` permet d'agrandir ou rétrécir l'objet en mimant un étirement avec les deux mains.
 - Un balayement de la main (geste `swipe`) permet, à la manière d'un potier, de mettre en rotation un objet.
 - Enfin, le geste `touch` permet, en pointant le doigt dans la direction souhaitée, de sculpter l'objet de manière très intuitive.
-
-# Les différents modes et leur utilité
-
-## Le mode object
-
-Le mode d'ouverture par défaut de notre application est le mode object. Il
-permet le déplacement d'un objet suite à l'action de `scale`, et la mise à
-l'échelle avec le `scale`.
-
-## Le mode poterie
-
-Dans ce mode, il est possible de faire tourner un objet (avec `swipe`) plus ou moins vite autour de son axe vertical. De plus, le mouvement du doigt permet de sculpter l'objet de deux façons différentes: soit en retrait (qui enlève de la matière à l'objet), soit en ajout de matière. On peut voir l'effet du déplacement de son doigt grâce à une petite sphère qui indique où se trouve le doigt.
-
-## Le mode paint
-
-De plus, il est possible de changer la couleur globale de l'objet en choisissant la couleur grâce à la position de la main (en trois dimensions reliées au rouge, vert et bleu).
-
-## Le changement d'angle de vues
-
-Dans tous les modes, il est possible de changer d'angle de vue, sur les côtés (`left` et `right`) du dessus (`above` et `under`), ou encore selon la vue de la caméra (`camera`).
